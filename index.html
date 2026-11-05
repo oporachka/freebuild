@@ -87,7 +87,7 @@ h2{margin:0 0 6px}
  <button class="btn primary" id="bSolo">Одиночная игра <span>▶</span></button>
  <button class="btn" id="bOnline">Онлайн 1 на 1 <span>⚔</span></button>
  <button class="btn" id="bSet1">Настройки <span>⚙</span></button>
- <div class="ver">v0.8 · редакты как в Fortnite, баланс скорости</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
+ <div class="ver">v0.9 · стена и лестница ставятся как в Fortnite</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
 </div></div>
 
 <div class="screen hide" id="online"><div class="panel">
@@ -219,7 +219,7 @@ function collapseCheck(){const m=edgeMap(),seen=new Set(),q=[];for(const[k,p]of 
 // ================= Онлайн 1 на 1 (WebRTC через PeerJS) =================
 // Все изменения мира идут через dispatch(action) и пересылаются сопернику.
 // Попадания считает стрелок, урон применяет тот, в кого попали.
-const NET_VER=8,ROOM_PREFIX='frbld-v8-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
+const NET_VER=9,ROOM_PREFIX='frbld-v9-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
 const Net={online:false,host:false,me:'local',conn:null,peer:null,score:{me:0,op:0},ping:0,sendT:0,pingT:0,
  send(a){this.msg({t:'act',a})},
  msg(o){try{if(this.conn&&this.conn.open)this.conn.send(o)}catch(e){}},
@@ -524,12 +524,14 @@ function aimRay(){const f=fwd();if(!settings.thirdPerson)return{o:eye(),d:f};con
 function fwd(){const c=Math.cos(me.pitch);return[Math.sin(me.yaw)*c,Math.sin(me.pitch),Math.cos(me.yaw)*c]}
 function dirIdx(){const fx=Math.sin(me.yaw),fz=Math.cos(me.yaw);return Math.abs(fx)>Math.abs(fz)?(fx>0?1:3):(fz>0?0:2)}
 const DIJ=[[0,1],[1,0],[0,-1],[-1,0]];
-function target(){const ci=Math.floor(me.x/S),cj=Math.floor(me.z/S),d=dirIdx(),[di,dj]=DIJ[d],Lf=Math.max(0,Math.floor((me.y+.5)/H)),pt=me.pitch,m=mat;
- if(slot=='w'){const l=pt>.75?Lf+1:Lf;return d==0?{t:'w',i:ci,j:cj+1,l,ax:0,mat:m}:d==2?{t:'w',i:ci,j:cj,l,ax:0,mat:m}:d==1?{t:'w',i:ci+1,j:cj,l,ax:1,mat:m}:{t:'w',i:ci,j:cj,l,ax:1,mat:m}}
- if(slot=='f'){if(pt<-.6)return{t:'f',i:ci,j:cj,l:Lf,mat:m};if(pt>.5)return{t:'f',i:ci,j:cj,l:Lf+1,mat:m};return{t:'f',i:ci+di,j:cj+dj,l:Lf,mat:m}}
- if(slot=='k'){if(pt>.5)return{t:'k',i:ci,j:cj,l:Lf+1,mask:0,mat:m};if(pt<-.6)return{t:'k',i:ci,j:cj,l:Lf,mask:0,mat:m};return{t:'k',i:ci+di,j:cj+dj,l:Lf,mask:0,mat:m}}
- let L=Math.max(0,Math.round(me.y/H));if(me.sup&&me.sup.t=='r'&&me.sup.d==d)L=me.sup.l+1;
- if(pt<-.75)return{t:'r',i:ci,j:cj,l:Math.max(0,Math.floor(me.y/H)),d,mat:m};return{t:'r',i:ci+di,j:cj+dj,l:L,d,mat:m}}
+function target(){const ci=Math.floor(me.x/S),cj=Math.floor(me.z/S),d=dirIdx(),[di,dj]=DIJ[d],Lf0=Math.max(0,Math.floor((me.y+.5)/H)),pt=me.pitch,m=mat;
+ // клетка «перед игроком» (как в Fortnite): стена, пол, лестница и конус целятся в одну клетку, стена — на её дальнем краю
+ let fi=Math.floor((me.x+di*S*.55)/S),fj=Math.floor((me.z+dj*S*.55)/S),L=Math.max(0,Math.round(me.y/H)),Lf=Lf0;
+ const onR=me.sup&&me.sup.t=='r'&&me.sup.d==d&&!(me.sup.hs>=0);if(onR){fi=me.sup.i+di;fj=me.sup.j+dj;L=me.sup.l+1;Lf=L}
+ if(slot=='w'){const l=pt>.75?Lf+1:Lf;return d==0?{t:'w',i:fi,j:fj+1,l,ax:0,mat:m}:d==2?{t:'w',i:fi,j:fj,l,ax:0,mat:m}:d==1?{t:'w',i:fi+1,j:fj,l,ax:1,mat:m}:{t:'w',i:fi,j:fj,l,ax:1,mat:m}}
+ if(slot=='f'){if(pt<-.6)return{t:'f',i:ci,j:cj,l:Lf0,mat:m};if(pt>.5)return{t:'f',i:ci,j:cj,l:Lf0+1,mat:m};return{t:'f',i:fi,j:fj,l:onR?L:Lf0,mat:m}}
+ if(slot=='k'){if(pt>.5)return{t:'k',i:ci,j:cj,l:Lf0+1,mask:0,mat:m};if(pt<-.6)return{t:'k',i:ci,j:cj,l:Lf0,mask:0,mat:m};return{t:'k',i:fi,j:fj,l:onR?L:Lf0,mask:0,mat:m}}
+ if(pt<-.75)return{t:'r',i:ci,j:cj,l:Math.max(0,Math.floor(me.y/H)),d,mat:m};return{t:'r',i:fi,j:fj,l:L,d,mat:m}}
 function rayTri(o,d,a,b,c){const e1=sub(b,a),e2=sub(c,a),p=cross(d,e2),det=dot(e1,p);if(Math.abs(det)<1e-9)return-1;const iv=1/det,t0=sub(o,a),u=dot(t0,p)*iv;if(u<0||u>1)return-1;const q=cross(t0,e1),v=dot(d,q)*iv;if(v<0||u+v>1)return-1;return dot(e2,q)*iv}
 function rayBox(o,d,b){let t0=0,t1=1e9;for(let k=0;k<3;k++){const iv=1/d[k];let a=(b[k]-o[k])*iv,c=(b[k+3]-o[k])*iv;if(a>c)[a,c]=[c,a];t0=Math.max(t0,a);t1=Math.min(t1,c);if(t0>t1)return-1}return t0}
 function raycast(o,d,maxT,onlyPieces){let best=null,bt=maxT;
