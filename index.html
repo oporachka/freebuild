@@ -87,7 +87,7 @@ h2{margin:0 0 6px}
  <button class="btn primary" id="bSolo">Одиночная игра <span>▶</span></button>
  <button class="btn" id="bOnline">Онлайн 1 на 1 <span>⚔</span></button>
  <button class="btn" id="bSet1">Настройки <span>⚙</span></button>
- <div class="ver">v1.3 · консоль на ё</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
+ <div class="ver">v1.3.1 · консоль на ё</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
 </div></div>
 
 <div class="screen hide" id="online"><div class="panel">
@@ -754,7 +754,7 @@ renderBinds();refreshLabels();
 // ================= Цикл =================
 let last=performance.now(),time=0,fpsA=60,buildCd=0;
 function update(dt){
- {const s=.0022*settings.sens;me.yaw-=pendX*s;me.pitch=Math.max(-1.5,Math.min(1.5,me.pitch-pendY*s*(settings.invertY?-1:1)));pendX=pendY=0;camInfo=computeCam();CFN.aim(dt)}
+ {const s=.0022*settings.sens;me.yaw-=pendX*s;me.pitch=Math.max(-1.5,Math.min(1.5,me.pitch-pendY*s*(settings.invertY?-1:1)));pendX=pendY=0;camInfo=computeCam();CFN.aim(dt);if(!isFinite(me.yaw))me.yaw=0;if(!isFinite(me.pitch))me.pitch=0}
  const fx=Math.sin(me.yaw),fz=Math.cos(me.yaw);let mx=0,mz=0;
  if(held.forward){mx+=fx;mz+=fz}if(held.back){mx-=fx;mz-=fz}if(held.right){mx-=fz;mz+=fx}if(held.left){mx+=fz;mz-=fx}
  const ml=Math.hypot(mx,mz),moving=ml>0;me.walk=(me.walk||0)+((moving&&me.onGround?1:0)-(me.walk||0))*Math.min(1,dt*10);let nx=me.x,nz=me.z;me.crT+=((me.cr?1:0)-me.crT)*Math.min(1,dt*12);me.spr=!!(held.sprint&&held.forward&&moving&&!me.cr&&me.stam>0&&castT<=0&&!(held.fire&&!isBuild(slot)&&!editP));if(me.spr){if(me.onGround)me.stam=Math.max(0,me.stam-22*dt);me.stamCd=1}else{me.stamCd-=dt;if(me.stamCd<=0)me.stam=Math.min(100,me.stam+30*dt)}const spd=SPEED*(me.spr?1.3:me.cr?.6:1);if(moving){nx+=mx/ml*spd*dt;nz+=mz/ml*spd*dt}
@@ -856,7 +856,7 @@ const CFN=(()=>{
  const DEF={aim:false,aimKey:'Mouse2',aimFov:8,smooth:.45,bone:'head',prio:'fov',visOnly:true,silent:false,pred:true,trig:false,trigDelay:60,trigKeyOnly:false,nospread:false,tPlayers:true,tBots:true,showFov:true,fovCol:'#ffffff',
   esp:false,box:'corners',names:true,hpbar:true,dist:true,snap:false,snapFrom:'bottom',headDot:true,offArrows:true,espMax:200,visCol:'#4cff6a',hidCol:'#ff4a4a',radar:false,
   chams:false,chHid:'#ff3df2',chVis:'#3dffb4',chVisOn:true,chAlpha:.6,chPulse:false,watermark:true};
- let cfg=Object.assign({},DEF);try{Object.assign(cfg,JSON.parse(localStorage.getItem('fb_cfn')||'{}'))}catch(e){}
+ let cfg=Object.assign({},DEF);try{Object.assign(cfg,JSON.parse(localStorage.getItem('fb_cfn')||'{}'))}catch(e){}for(const k in DEF)if(typeof DEF[k]=='number'&&!Number.isFinite(cfg[k]))cfg[k]=DEF[k];
  const sv=()=>{try{localStorage.setItem('fb_cfn',JSON.stringify(cfg))}catch(e){}};
  const C={cfg,ui:false,trig:false,unlocked:false,cur:null};
  const keys={};let bindWaitK=null,trigT=0,lastSt=null,vel=[0,0,0];
@@ -890,7 +890,7 @@ const CFN=(()=>{
   const bd=menu.querySelector('.bd');
   for(const[k,ty,lb,a,b,st]of TABS[tab]){const r=document.createElement('div');r.className='row';const L=document.createElement('label');L.textContent=lb;r.appendChild(L);let el;
    if(ty=='chk'){el=document.createElement('input');el.type='checkbox';el.checked=!!cfg[k];el.onchange=()=>{cfg[k]=el.checked;sv()}}
-   else if(ty=='rng'){el=document.createElement('input');el.type='range';el.min=a;el.max=b;el.step=st;el.value=cfg[k];const v=document.createElement('span');v.className='v';v.textContent=cfg[k];el.oninput=()=>{cfg[k]=+el.value;v.textContent=el.value;sv()};r.appendChild(el);el=v}
+   else if(ty=='rng'){const rg=document.createElement('input');rg.type='range';rg.min=a;rg.max=b;rg.step=st;if(!Number.isFinite(cfg[k]))cfg[k]=DEF[k];rg.value=cfg[k];const v=document.createElement('span');v.className='v';v.textContent=cfg[k];rg.oninput=()=>{cfg[k]=+rg.value;v.textContent=rg.value;sv()};r.appendChild(rg);el=v}
    else if(ty=='sel'){el=document.createElement('select');for(const o in a){const op=document.createElement('option');op.value=o;op.textContent=a[o];if(cfg[k]==o)op.selected=true;el.appendChild(op)}el.onchange=()=>{cfg[k]=el.value;sv()}}
    else if(ty=='col'){el=document.createElement('input');el.type='color';el.value=cfg[k];el.oninput=()=>{cfg[k]=el.value;sv()}}
    else if(ty=='key'){el=document.createElement('button');el.textContent=bindWaitK==k?'Нажми клавишу…':cfg[k]=='always'?'Всегда':keyName(cfg[k]);el.onclick=e=>{e.stopPropagation();bindWaitK=k;drawMenu()};
@@ -933,7 +933,7 @@ const CFN=(()=>{
   if(!p){const a=q=>{const d=norm(sub(q,o));return dot(d,f)};p=a(head)>=a(body)?head:body}
   if(cfg.visOnly&&!visible(o,p)){const q=p===head?body:head;if(visible(o,q))p=q;else return null}
   if(cfg.pred&&t.kind=='player'){const k=Math.min(.3,(Net.ping||0)/1000);p=[p[0]+vel[0]*k,p[1]+vel[1]*k,p[2]+vel[2]*k]}return p}
- function pick(o,f){let best=null,bs=1e9;const lim=cfg.aimFov*Math.PI/180;
+ function pick(o,f){let best=null,bs=1e9;const lim=(isFinite(cfg.aimFov)?cfg.aimFov:8)*Math.PI/180;
   for(const t of targets()){const p=aimPt(t,o,f);if(!p)continue;const d=sub(p,o),L=Math.hypot(...d),ang=Math.acos(Math.max(-1,Math.min(1,dot(d,f)/L)));if(ang>lim)continue;
    const sc=cfg.prio=='fov'?ang:cfg.prio=='dist'?L:t.hp+t.sh+ang;if(sc<bs){bs=sc;best={t,p}}}return best}
  const armed=()=>(slot=='ar'||slot=='sg')&&!editP&&mode=='play';
@@ -944,8 +944,8 @@ const CFN=(()=>{
   if(cfg.aim&&!cfg.silent&&keyOn()){const ci=computeCam(),tg=pick(ci.e,ci.f);C.cur=tg;
    if(tg){const y0=me.yaw,p0=me.pitch;let yw=y0,pt=p0;
     for(let it=0;it<3;it++){me.yaw=yw;me.pitch=pt;const e=computeCam().e,d=norm(sub(tg.p,e));yw=Math.atan2(d[0],d[2]);pt=Math.asin(Math.max(-1,Math.min(1,d[1])))}
-    let dy=yw-y0;dy=Math.atan2(Math.sin(dy),Math.cos(dy));const k=cfg.smooth<=0?1:1-Math.exp(-dt*(1-cfg.smooth)*28);
-    me.yaw=y0+dy*k;me.pitch=Math.max(-1.5,Math.min(1.5,p0+(pt-p0)*k));camInfo=computeCam()}}
+    let dy=yw-y0;dy=Math.atan2(Math.sin(dy),Math.cos(dy));const sm=isFinite(cfg.smooth)?cfg.smooth:.45,k=sm<=0?1:1-Math.exp(-dt*(1-sm)*28);
+    me.yaw=y0+dy*k;me.pitch=Math.max(-1.5,Math.min(1.5,p0+(pt-p0)*k));if(!isFinite(me.yaw)||!isFinite(me.pitch)){me.yaw=y0;me.pitch=p0}camInfo=computeCam()}}
   if(cfg.trig&&(!cfg.trigKeyOnly||keyOn())){const ar=aimRay(),h=raycast(ar.o,ar.d,W[slot].range||90);if(h&&(h.kind=='player'||h.kind=='dummy')){trigT+=dt*1000;if(trigT>=cfg.trigDelay)C.trig=true}else trigT=0}else trigT=0};
  C.silentRay=AR=>{if(!cfg.aim||!cfg.silent||!keyOn()||!armed())return AR;const ci=computeCam(),tg=pick(ci.e,ci.f);if(!tg)return AR;C.cur=tg;return{o:AR.o,d:norm(sub(tg.p,AR.o))}};
  C.spread=()=>cfg.nospread?0:1;
