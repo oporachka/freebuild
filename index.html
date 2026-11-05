@@ -87,7 +87,7 @@ h2{margin:0 0 6px}
  <button class="btn primary" id="bSolo">Одиночная игра <span>▶</span></button>
  <button class="btn" id="bOnline">Онлайн 1 на 1 <span>⚔</span></button>
  <button class="btn" id="bSet1">Настройки <span>⚙</span></button>
- <div class="ver">v1.1 · стена и пол ставятся туда, куда смотришь</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
+ <div class="ver">v1.2 · диагональный редакт стены, рампы со стенами без застреваний</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
 </div></div>
 
 <div class="screen hide" id="online"><div class="panel">
@@ -221,7 +221,7 @@ function collapseCheck(){const m=edgeMap(),seen=new Set(),q=[];for(const[k,p]of 
 // ================= Онлайн 1 на 1 (WebRTC через PeerJS) =================
 // Все изменения мира идут через dispatch(action) и пересылаются сопернику.
 // Попадания считает стрелок, урон применяет тот, в кого попали.
-const NET_VER=11,ROOM_PREFIX='frbld-v11-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
+const NET_VER=12,ROOM_PREFIX='frbld-v12-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
 const Net={online:false,host:false,me:'local',conn:null,peer:null,score:{me:0,op:0},ping:0,sendT:0,pingT:0,
  send(a){this.msg({t:'act',a})},
  msg(o){try{if(this.conn&&this.conn.open)this.conn.send(o)}catch(e){}},
@@ -398,6 +398,7 @@ function coneHt(mask,u,v){if(mask in CSL)return rampT(CSL[mask],u,v)*2;const hh=
 // распознавание редакта (как в Fortnite)
 // разрешённые редакты (как в Fortnite, вместе с зеркальными)
 const OK_EDITS={w:new Set([8,16,32,40,9,18,36,63,27,54,448,504,11,38,416,200]),f:new Set([1,2,4,8,3,12,5,10,7,11,13,14])};
+const DIAG={11:[0,0],38:[1,0],200:[0,1],416:[1,1]};
 function validEdit(t,mask){if(!mask)return true;const s=OK_EDITS[t];return!s||s.has(mask)}
 function pattern(t,mask){if(!mask)return{type:'none',name:'Целая'};
  const cnt=x=>{let n=0;while(x){n+=x&1;x>>=1}return n};
@@ -410,7 +411,7 @@ function pattern(t,mask){if(!mask)return{type:'none',name:'Целая'};
  for(let b=3;b<9;b++)if(mask==(1<<b))return{type:'window',name:'Окно'};
  if(mask==40)return{type:'window',name:'Два окна'};
  if(mask==448)return{type:'hole',name:'Низкая стена'};if(mask==504)return{type:'hole',name:'Полстены'};
- if(mask==11||mask==38)return{type:'pass',name:'Угловой проход'};if(mask==416||mask==200)return{type:'hole',name:'Угловой вырез'};
+ if(mask==11||mask==38)return{type:'pass',name:'Диагональный проход'};if(mask==416||mask==200)return{type:'hole',name:'Диагональный срез'};
  if(mask&7)return{type:'pass',name:'Проход'};return{type:'hole',name:'Проём'}}
 function fillet(p,a,c,sd,add){const T=S/3,A0=a*T,A1=A0+T,Y0=p.l*H+c*H/3,Y1=Y0+H/3,N=14;
  for(let k=0;k<N;k++){const xa=A0+k*T/N,xb=xa+T/N,xm=(xa+xb)/2,dx=sd=='tl'?(A1-xm)/T:(xm-A0)/T,yc=Y0+(H/3)*Math.sqrt(Math.max(0,1-dx*dx));
@@ -431,6 +432,14 @@ function finalize(p){const parts=[],{i,j,l}=p;p.pat=null;
  const add=(c,k,col,nocol)=>parts.push({c,k,col,nocol});
  if(p.t=='r')add(rampCorners(i,j,l,p.d,p.hs),1);
  else if(p.t=='k'){for(const c of coneParts(i,j,l,p.mask||0))add(c,1);p.pat=pattern('k',p.mask||0)}
+ else if(p.t=='w'&&DIAG[p.mask]){p.pat=pattern('w',p.mask);const[fu,fv]=DIAG[p.mask],hf=.12,e=.05;
+  // угловой редакт по диагонали: срез идёт прямой линией через внутренний угол
+  const Wp=(q,sd)=>{const al=(fu?1-q[0]:q[0])*S,y=l*H+(fv?1-q[1]:q[1])*H;return p.ax==0?[i*S+al,y,j*S+sd]:[i*S+sd,y,j*S+al]};
+  const hx=(Q,h)=>[...Q.map(q=>Wp(q,-h)),...Q.map(q=>Wp(q,h))];
+  add(hx([[0,2/3],[2/3,0],[2/3,1],[0,1]],hf),1,null,true);add(hx([[2/3,0],[1,0],[1,1],[2/3,1]],hf),1);
+  add(hx([[0,2/3],[2/3,0],[2/3+e,0],[0,2/3+e]],.17),.62,null,true);
+  const base=p.ax==0?i*S:j*S;p.xr=[];for(let k=0;k<8;k++){const u0=k/12,u1=(k+1)/12,vl=2/3-(k+.5)/12;
+   const a0=fu?1-u1:u0,a1=fu?1-u0:u1,y0=fv?0:vl,y1=fv?1-vl:1;p.xr.push([base+a0*S,base+a1*S,l*H+y0*H,l*H+y1*H])}}
  else{const n=p.t=='w'?3:2,T=S/n,K=(~p.mask)&((1<<(n*n))-1);for(const[a,c,w,h]of greedy(K,n))add(tileBox(p,a,c,w,h),1);
   const pat=p.pat=pattern(p.t,p.mask),fil=pat.fil||[],isK=(a,c)=>a>=0&&a<n&&c>=0&&c<n&&(K>>(a+c*n)&1),tw=.14;
   for(const[a,c,sd]of fil)fillet(p,a,c,sd,add);
@@ -447,7 +456,7 @@ function finalize(p){const parts=[],{i,j,l}=p;p.pat=null;
    add(doorBox(p,hinge,th,Lp-.3,Lp-.16,-.16,.16,y0+1.25,y0+1.4),0,[.85,.75,.35],true)}}
  p.parts=parts;p.glass=[];p.boxes=parts.map(x=>x.c);
  if(p.t=='w'){const ax=p.ax==0?0:2,rr=c=>{let a0=1e9,a1=-1e9,y0=1e9,y1=-1e9;for(const v of c){a0=Math.min(a0,v[ax]);a1=Math.max(a1,v[ax]);y0=Math.min(y0,v[1]);y1=Math.max(y1,v[1])}return[a0,a1,y0,y1]};
-  p.rects=parts.filter(x=>!x.nocol).map(x=>rr(x.c))}
+  p.rects=parts.filter(x=>!x.nocol).map(x=>rr(x.c));if(p.xr&&DIAG[p.mask])p.rects.push(...p.xr);p.xr=null}
  const cc=p.t=='w'?(p.ax==0?[(p.i+.5)*S,(p.l+.5)*H,p.j*S]:[p.i*S,(p.l+.5)*H,(p.j+.5)*S]):[(p.i+.5)*S,(p.l+.5)*H,(p.j+.5)*S];
  p.cen=cc;p.r2=4*S*S}
 const animating=new Set();
@@ -517,6 +526,8 @@ function ceilingAt(x,z,y0,y1){const i=Math.floor(x/S),j=Math.floor(z/S),u=x/S-i,
 function solveWall(p,x,z,px,pz,y){const ax=p.ax;let al=ax==0?x:z,ac=ax==0?z:x;const pal=ax==0?px:pz,pac=ax==0?pz:px,c0=ax==0?p.j*S:p.i*S;
  if(Math.abs(ac-c0)>=R)return[x,z];
  for(const r of p.rects){if(y+HEAD<=r[2]+.01||y>=r[3]-.05)continue;if(al<=r[0]-R||al>=r[1]+R)continue;
+  // верх стены ниже «ступеньки», а за стеной есть опора (лестница/пол) — перешагиваем, как в рамп-раше со стенами
+  if(me.onGround&&r[3]-y<.7){const acB=c0+(pac>=c0?-1:1)*.2,g=ax==0?supportAt(al,acB,y,1.1):supportAt(acB,al,y,1.1);if(g.s&&g.h>=r[3]-.15)continue}
   if(Math.abs(pac-c0)>=R-1e-6)ac=c0+(pac>=c0?R:-R);else al=pal<=(r[0]+r[1])/2?r[0]-R:r[1]+R}
  return ax==0?[al,ac]:[ac,al]}
 function collideWalls(x,z,px,pz,y){const i0=Math.floor(x/S),j0=Math.floor(z/S);
