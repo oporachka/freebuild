@@ -87,7 +87,7 @@ h2{margin:0 0 6px}
  <button class="btn primary" id="bSolo">Одиночная игра <span>▶</span></button>
  <button class="btn" id="bOnline">Онлайн 1 на 1 <span>⚔</span></button>
  <button class="btn" id="bSet1">Настройки <span>⚙</span></button>
- <div class="ver">v1.3.1 · консоль на ё</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
+ <div class="ver">v1.4 · дурка в конусе, фикс прохода сквозь рампы</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
 </div></div>
 
 <div class="screen hide" id="online"><div class="panel">
@@ -221,7 +221,7 @@ function collapseCheck(){const m=edgeMap(),seen=new Set(),q=[];for(const[k,p]of 
 // ================= Онлайн 1 на 1 (WebRTC через PeerJS) =================
 // Все изменения мира идут через dispatch(action) и пересылаются сопернику.
 // Попадания считает стрелок, урон применяет тот, в кого попали.
-const NET_VER=13,ROOM_PREFIX='frbld-v13-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
+const NET_VER=14,ROOM_PREFIX='frbld-v14-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
 const Net={online:false,host:false,me:'local',conn:null,peer:null,score:{me:0,op:0},ping:0,sendT:0,pingT:0,
  send(a){this.msg({t:'act',a})},
  msg(o){try{if(this.conn&&this.conn.open)this.conn.send(o)}catch(e){}},
@@ -403,7 +403,7 @@ function validEdit(t,mask){if(!mask)return true;const s=OK_EDITS[t];return!s||s.
 function pattern(t,mask){if(!mask)return{type:'none',name:'Целая'};
  const cnt=x=>{let n=0;while(x){n+=x&1;x>>=1}return n};
  if(t=='f'){const n=cnt(mask);return{type:'hole',name:n==1?'Угол':n==2?([3,12,5,10].includes(mask)?'Полпола':'Диагональ'):n==3?'Четверть пола':'Пусто'}}
- if(t=='k'){const n=cnt(mask);return{type:'cone',name:n==1?'Скат угла':n==2?([3,12,5,10].includes(mask)?'Скат (как рампа)':'Седло'):n==3?'Угол крыши':'Плоская крыша'}}
+ if(t=='k'){const n=cnt(mask);return{type:'cone',name:n==1?'Скат угла (с полом — дурка)':n==2?([3,12,5,10].includes(mask)?'Скат (как рампа)':'Седло'):n==3?'Угол крыши':'Плоская крыша'}}
  for(let a=0;a<3;a++)if(mask==((1<<a)|(1<<(a+3))))return{type:'door',a,name:'Дверь'};
  if(mask==63)return{type:'arch',fil:[[0,1,'tl'],[2,1,'tr']],name:'Арка'};
  if(mask==54)return{type:'arch',fil:[[1,1,'tl']],name:'Полуарка'};
@@ -420,6 +420,10 @@ function addHexUV(arr,c,col,uvf){let m=[0,0,0];for(const v of c){m[0]+=v[0]/8;m[
  for(const f of FACES){const q=f.map(i=>c[i]);let n=norm(cross(sub(q[1],q[0]),sub(q[3],q[0])));
   const fc=[(q[0][0]+q[2][0])/2-m[0],(q[0][1]+q[2][1])/2-m[1],(q[0][2]+q[2][2])/2-m[2]];if(dot(n,fc)<0)n=n.map(x=>-x);
   for(const i of[0,1,2,0,2,3]){const v=q[i],uv=uvf?uvf(v):UVS[i];arr.push(v[0],v[1],v[2],n[0],n[1],n[2],col[0],col[1],col[2],uv[0],uv[1])}}}
+// «дурка»: 1 клетка конуса + та же клетка пола под ним = сквозной проход
+function coneHoleQ(p){const m=p.mask||0;if(![1,2,4,8].includes(m))return-1;const q=Math.log2(m),f=pieces.get('f'+p.i+','+p.j+','+p.l);return f&&(f.mask>>q&1)?q:-1}
+const kHole=(p,u,v)=>p.hole>=0&&Math.floor(u*2)+Math.floor(v*2)*2==p.hole;
+function refreshCone(i,j,l){const k=pieces.get('k'+i+','+j+','+l);if(k){const h=k.hole;finalize(k);if(k.hole!==h)dirty=true}}
 const keyOf=p=>p.t+p.i+','+p.j+','+p.l+(p.t=='w'?','+p.ax:'');
 
 // ================= Мир =================
@@ -431,7 +435,10 @@ function greedy(K,n){const used=new Array(n*n).fill(false),out=[];
 function finalize(p){const parts=[],{i,j,l}=p;p.pat=null;
  const add=(c,k,col,nocol)=>parts.push({c,k,col,nocol});
  if(p.t=='r')add(rampCorners(i,j,l,p.d,p.hs),1);
- else if(p.t=='k'){for(const c of coneParts(i,j,l,p.mask||0))add(c,1);p.pat=pattern('k',p.mask||0)}
+ else if(p.t=='k'){p.hole=coneHoleQ(p);if(p.hole>=0){const N=8,yb=l*H+.02;for(let a=0;a<N;a++)for(let c=0;c<N;c++){const u0=a/N,u1=(a+1)/N,v0=c/N,v1=(c+1)/N;
+   if(Math.floor((u0+u1))+Math.floor((v0+v1))*2==p.hole)continue;const P=(u,v,dy)=>[(i+u)*S,yb+coneHt(p.mask,u,v)*H/2+dy,(j+v)*S];
+   add([P(u0,v0,-.22),P(u1,v0,-.22),P(u1,v1,-.22),P(u0,v1,-.22),P(u0,v0,0),P(u1,v0,0),P(u1,v1,0),P(u0,v1,0)],1)}}
+  else for(const c of coneParts(i,j,l,p.mask||0))add(c,1);p.pat=pattern('k',p.mask||0);if(p.hole>=0)p.pat={type:'cone',name:'Дурка (проход)'}}
  else if(p.t=='w'&&DIAG[p.mask]){p.pat=pattern('w',p.mask);const[fu,fv]=DIAG[p.mask],hf=.12,e=.05;
   // угловой редакт по диагонали: срез идёт прямой линией через внутренний угол
   const Wp=(q,sd)=>{const al=(fu?1-q[0]:q[0])*S,y=l*H+(fv?1-q[1]:q[1])*H;return p.ax==0?[i*S+al,y,j*S+sd]:[i*S+sd,y,j*S+al]};
@@ -460,7 +467,8 @@ function finalize(p){const parts=[],{i,j,l}=p;p.pat=null;
  const cc=p.t=='w'?(p.ax==0?[(p.i+.5)*S,(p.l+.5)*H,p.j*S]:[p.i*S,(p.l+.5)*H,(p.j+.5)*S]):[(p.i+.5)*S,(p.l+.5)*H,(p.j+.5)*S];
  p.cen=cc;p.r2=4*S*S}
 const animating=new Set();
-function applyAction(a){
+function applyAction(a){const r_=applyAction0(a);try{const p=a.p||pieces.get(a.k)||(a.k&&{t:a.k[0],i:+a.k.slice(1).split(',')[0],j:+a.k.split(',')[1],l:+a.k.split(',')[2]});if(p&&p.t=='f')refreshCone(p.i,p.j,p.l)}catch(e){}return r_}
+function applyAction0(a){
  if(a.type=='build'){const k=keyOf(a.p);if(pieces.has(k)||a.p.l<0)return false;const p=Object.assign({mask:0},a.p);
   p.maxhp=MATS[p.mat].hp;p.hp=p.maxhp;finalize(p);pieces.set(k,p);dirty=true;liftT=.15;SFX.play('place',p.cen,.7);return true}
  if(a.type=='damage'){const p=pieces.get(a.k);if(!p)return false;p.hp-=a.dmg;dirty=true;
@@ -512,17 +520,18 @@ let editP=null,editMask=0,editD=0,editPath=[],camInfo={e:[2,2,2],f:[0,0,1]},pend
 function supportAt(x,z,y,step){let best=0,s=null;const i=Math.floor(x/S),j=Math.floor(z/S),u=x/S-i,v=z/S-j,lm=Math.floor((y+step)/H)+1,bit=Math.floor(u*2)+Math.floor(v*2)*2;
  for(let l=0;l<=lm;l++){let p=pieces.get('f'+i+','+j+','+l);if(p&&!(p.mask>>bit&1)){const t=l*H+.1;if(t<=y+step&&t>best){best=t;s=p}}
   p=pieces.get('r'+i+','+j+','+l);if(p&&rampIn(p,u,v)){const t=l*H+rampT(p.d,u,v)*H+.1;if(t<=y+step&&t>best){best=t;s=p}}
-  p=pieces.get('k'+i+','+j+','+l);if(p){const t=l*H+.02+coneHt(p.mask||0,u,v)*H/2;if(t<=y+step&&t>best){best=t;s=p}}}return{h:best,s}}
+  p=pieces.get('k'+i+','+j+','+l);if(p&&!kHole(p,u,v)){const t=l*H+.02+coneHt(p.mask||0,u,v)*H/2;if(t<=y+step&&t>best){best=t;s=p}}}return{h:best,s}}
 // тело игрока пересекает наклонную/горизонтальную постройку выше «ступеньки»
-function bodyHit(x,z,y){const lo=y+.72,hi=y+HEAD-.05,o=R*.75;
+function bodyPen(x,z,y){const lo=y+.72,hi=y+HEAD-.05,o=R*.75;let pen=0;
  for(const[dx,dz]of[[0,0],[o,0],[-o,0],[0,o],[0,-o]]){const px=x+dx,pz=z+dz,i=Math.floor(px/S),j=Math.floor(pz/S),u=px/S-i,v=pz/S-j,bit=Math.floor(u*2)+Math.floor(v*2)*2;
-  for(let l=Math.max(0,Math.floor(y/H)-1);l<=Math.floor(hi/H)+1;l++){let p=pieces.get('f'+i+','+j+','+l);if(p&&!(p.mask>>bit&1)&&l*H+.14>lo&&l*H-.18<hi)return true;
-   p=pieces.get('r'+i+','+j+','+l);if(p&&rampIn(p,u,v)){const t=l*H+rampT(p.d,u,v)*H+.1;if(t>lo&&t-.35<hi)return true}
-   p=pieces.get('k'+i+','+j+','+l);if(p){const t=l*H+.02+coneHt(p.mask||0,u,v)*H/2;if(t>lo&&l*H<hi)return true}}}return false}
+  for(let l=Math.max(0,Math.floor(y/H)-1);l<=Math.floor(hi/H)+1;l++){let p=pieces.get('f'+i+','+j+','+l);if(p&&!(p.mask>>bit&1)&&l*H+.14>lo&&l*H-.18<hi)pen=Math.max(pen,Math.min(l*H+.14,hi)-Math.max(l*H-.18,lo));
+   p=pieces.get('r'+i+','+j+','+l);if(p&&rampIn(p,u,v)){const t=l*H+rampT(p.d,u,v)*H+.1;if(t>lo&&t-.35<hi)pen=Math.max(pen,Math.min(t,hi)-Math.max(t-.35,lo)+(t-lo)*.5)}
+   p=pieces.get('k'+i+','+j+','+l);if(p&&!kHole(p,u,v)){const t=l*H+.02+coneHt(p.mask||0,u,v)*H/2;if(t>lo&&l*H<hi)pen=Math.max(pen,Math.min(t,hi)-Math.max(l*H,lo))}}}return pen}
+function bodyHit(x,z,y){return bodyPen(x,z,y)>0}
 function ceilingAt(x,z,y0,y1){const i=Math.floor(x/S),j=Math.floor(z/S),u=x/S-i,v=z/S-j,bit=Math.floor(u*2)+Math.floor(v*2)*2;let best=Infinity;
  for(let l=Math.max(0,Math.floor(y0/H));l<=Math.floor(y1/H)+1;l++){let p=pieces.get('f'+i+','+j+','+l);if(p&&!(p.mask>>bit&1)){const b=l*H-.15;if(b>y0-.01&&b<y1&&b<best)best=b}
   p=pieces.get('r'+i+','+j+','+l);if(p&&rampIn(p,u,v)){const b=l*H+rampT(p.d,u,v)*H-.15;if(b>y0-.01&&b<y1&&b<best)best=b}
-  p=pieces.get('k'+i+','+j+','+l);if(p){const b=l*H+.02;if(b>y0-.01&&b<y1&&b<best)best=b}}return best}
+  p=pieces.get('k'+i+','+j+','+l);if(p&&!kHole(p,u,v)){const b=l*H+.02;if(b>y0-.01&&b<y1&&b<best)best=b}}return best}
 function solveWall(p,x,z,px,pz,y){const ax=p.ax;let al=ax==0?x:z,ac=ax==0?z:x;const pal=ax==0?px:pz,pac=ax==0?pz:px,c0=ax==0?p.j*S:p.i*S;
  if(Math.abs(ac-c0)>=R)return[x,z];
  for(const r of p.rects){if(y+HEAD<=r[2]+.01||y>=r[3]-.05)continue;if(al<=r[0]-R||al>=r[1]+R)continue;
@@ -759,7 +768,7 @@ function update(dt){
  if(held.forward){mx+=fx;mz+=fz}if(held.back){mx-=fx;mz-=fz}if(held.right){mx-=fz;mz+=fx}if(held.left){mx+=fz;mz-=fx}
  const ml=Math.hypot(mx,mz),moving=ml>0;me.walk=(me.walk||0)+((moving&&me.onGround?1:0)-(me.walk||0))*Math.min(1,dt*10);let nx=me.x,nz=me.z;me.crT+=((me.cr?1:0)-me.crT)*Math.min(1,dt*12);me.spr=!!(held.sprint&&held.forward&&moving&&!me.cr&&me.stam>0&&castT<=0&&!(held.fire&&!isBuild(slot)&&!editP));if(me.spr){if(me.onGround)me.stam=Math.max(0,me.stam-22*dt);me.stamCd=1}else{me.stamCd-=dt;if(me.stamCd<=0)me.stam=Math.min(100,me.stam+30*dt)}const spd=SPEED*(me.spr?1.3:me.cr?.6:1);if(moving){nx+=mx/ml*spd*dt;nz+=mz/ml*spd*dt}
  [nx,nz]=collideWalls(nx,nz,me.x,me.z,me.y);
- if(!bodyHit(me.x,me.z,me.y)&&bodyHit(nx,nz,me.y)){if(!bodyHit(nx,me.z,me.y))nz=me.z;else if(!bodyHit(me.x,nz,me.y))nx=me.x;else{nx=me.x;nz=me.z}}
+ {const p0=bodyPen(me.x,me.z,me.y)+1e-4;if(bodyPen(nx,nz,me.y)>p0){if(bodyPen(nx,me.z,me.y)<=p0)nz=me.z;else if(bodyPen(me.x,nz,me.y)<=p0)nx=me.x;else{nx=me.x;nz=me.z}}}
  if(held.jump&&me.onGround){me.cr=false;me.vy=JUMP;me.onGround=false;SFX.play('jump',null,.5)}
  me.vy-=GRAV*dt;let ny=me.y+me.vy*dt;
  if(me.vy>0){const c=ceilingAt(nx,nz,me.y+HEAD,ny+HEAD);if(c<Infinity){ny=c-HEAD;me.vy=0}}
