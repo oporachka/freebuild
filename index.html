@@ -87,7 +87,7 @@ h2{margin:0 0 6px}
  <button class="btn primary" id="bSolo">Одиночная игра <span>▶</span></button>
  <button class="btn" id="bOnline">Онлайн 1 на 1 <span>⚔</span></button>
  <button class="btn" id="bSet1">Настройки <span>⚙</span></button>
- <div class="ver">v1.0 · фиксы коллизий, опор и новые редакты</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
+ <div class="ver">v1.1 · стена и пол ставятся туда, куда смотришь</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
 </div></div>
 
 <div class="screen hide" id="online"><div class="panel">
@@ -221,7 +221,7 @@ function collapseCheck(){const m=edgeMap(),seen=new Set(),q=[];for(const[k,p]of 
 // ================= Онлайн 1 на 1 (WebRTC через PeerJS) =================
 // Все изменения мира идут через dispatch(action) и пересылаются сопернику.
 // Попадания считает стрелок, урон применяет тот, в кого попали.
-const NET_VER=10,ROOM_PREFIX='frbld-v10-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
+const NET_VER=11,ROOM_PREFIX='frbld-v11-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
 const Net={online:false,host:false,me:'local',conn:null,peer:null,score:{me:0,op:0},ping:0,sendT:0,pingT:0,
  send(a){this.msg({t:'act',a})},
  msg(o){try{if(this.conn&&this.conn.open)this.conn.send(o)}catch(e){}},
@@ -534,14 +534,29 @@ function fwd(){const c=Math.cos(me.pitch);return[Math.sin(me.yaw)*c,Math.sin(me.
 function dirIdx(){const fx=Math.sin(me.yaw),fz=Math.cos(me.yaw);return Math.abs(fx)>Math.abs(fz)?(fx>0?1:3):(fz>0?0:2)}
 const DIJ=[[0,1],[1,0],[0,-1],[-1,0]];
 function target(){const ci=Math.floor(me.x/S),cj=Math.floor(me.z/S),d=dirIdx(),[di,dj]=DIJ[d],Lf0=Math.max(0,Math.floor((me.y+.5)/H)),pt=me.pitch,m=mat;
- // клетка «перед игроком» (как в Fortnite): стена, пол, лестница и конус целятся в одну клетку, стена — на её дальнем краю
- let fi=Math.floor((me.x+di*S*.55)/S),fj=Math.floor((me.z+dj*S*.55)/S),L=Math.max(0,Math.round(me.y/H)),Lf=Lf0;
- if(fi!=ci||fj!=cj){const wk=d==0?'w'+ci+','+(cj+1)+','+Lf0+',0':d==2?'w'+ci+','+cj+','+Lf0+',0':d==1?'w'+(ci+1)+','+cj+','+Lf0+',1':'w'+ci+','+cj+','+Lf0+',1';if(pieces.has(wk)){fi=ci;fj=cj}}
- const onR=me.sup&&me.sup.t=='r'&&me.sup.d==d&&!(me.sup.hs>=0);if(onR){fi=me.sup.i+di;fj=me.sup.j+dj;L=me.sup.l+1;Lf=L}
- if(slot=='w'){const l=pt>.75?Lf+1:Lf;return d==0?{t:'w',i:fi,j:fj+1,l,ax:0,mat:m}:d==2?{t:'w',i:fi,j:fj,l,ax:0,mat:m}:d==1?{t:'w',i:fi+1,j:fj,l,ax:1,mat:m}:{t:'w',i:fi,j:fj,l,ax:1,mat:m}}
- if(slot=='f'){if(pt<-.6)return{t:'f',i:ci,j:cj,l:Lf0,mat:m};if(pt>.5)return{t:'f',i:ci,j:cj,l:Lf0+1,mat:m};return{t:'f',i:fi,j:fj,l:onR?L:Lf0,mat:m}}
- if(slot=='k'){if(pt>.5)return{t:'k',i:ci,j:cj,l:Lf0+1,mask:0,mat:m};if(pt<-.6)return{t:'k',i:ci,j:cj,l:Lf0,mask:0,mat:m};return{t:'k',i:fi,j:fj,l:onR?L:Lf0,mask:0,mat:m}}
- if(pt<-.75)return{t:'r',i:ci,j:cj,l:Math.max(0,Math.floor(me.y/H)),d,mat:m};return{t:'r',i:fi,j:fj,l:L,d,mat:m}}
+ const fx=Math.sin(me.yaw),fz=Math.cos(me.yaw);
+ // клетка по направлению взгляда (точное направление, не только 4 стороны)
+ let gi=Math.floor((me.x+fx*S*.55)/S),gj=Math.floor((me.z+fz*S*.55)/S),gl=Lf0;
+ // для лестницы — клетка строго по одной из 4 сторон
+ let ri=Math.floor((me.x+di*S*.55)/S),rj=Math.floor((me.z+dj*S*.55)/S),L=Math.max(0,Math.round(me.y/H));
+ const onR=me.sup&&me.sup.t=='r'&&me.sup.d==d&&!(me.sup.hs>=0);
+ if(onR){ri=gi=me.sup.i+di;rj=gj=me.sup.j+dj;L=gl=me.sup.l+1}
+ if(slot=='w'&&!onR&&(gi!=ci||gj!=cj)){const x0=ci*S,z0=cj*S,tx=fx>1e-6?(x0+S-me.x)/fx:fx<-1e-6?(x0-me.x)/fx:1e9,tz=fz>1e-6?(z0+S-me.z)/fz:fz<-1e-6?(z0-me.z)/fz:1e9,l=pt>.75?Lf0+1:Lf0;
+  const own=tx<tz?{t:'w',i:fx>0?ci+1:ci,j:cj,l,ax:1,mat:m}:{t:'w',i:ci,j:fz>0?cj+1:cj,l,ax:0,mat:m};if(pieces.has(keyOf(own)))return own}
+ if(slot=='w'){const l=pt>.75?gl+1:gl,x0=gi*S,z0=gj*S;
+  // стена — на том краю клетки, через который «выходит» взгляд
+  const tx=fx>1e-6?(x0+S-me.x)/fx:fx<-1e-6?(x0-me.x)/fx:1e9,tz=fz>1e-6?(z0+S-me.z)/fz:fz<-1e-6?(z0-me.z)/fz:1e9;
+  return tx<tz?{t:'w',i:fx>0?gi+1:gi,j:gj,l,ax:1,mat:m}:{t:'w',i:gi,j:fz>0?gj+1:gj,l,ax:0,mat:m}}
+ if(slot=='f'||slot=='k'){const ex=slot=='k'?{mask:0}:{};
+  // смотришь вниз/вверх — клетка, куда указывает прицел (соседняя или своя)
+  if(pt<-.35||pt>.5){const up=pt>.5,lv=up?Lf0+1:Lf0,ar=aimRay(),py=lv*H;
+   if(Math.abs(ar.d[1])>1e-4){const t=(py-ar.o[1])/ar.d[1];if(t>0){let hi=Math.floor((ar.o[0]+ar.d[0]*t)/S),hj=Math.floor((ar.o[2]+ar.d[2]*t)/S);
+    hi=Math.max(ci-1,Math.min(ci+1,hi));hj=Math.max(cj-1,Math.min(cj+1,hj));
+    if(up||pt<-.6||Math.hypot((hi+.5)*S-me.x,(hj+.5)*S-me.z)<S*1.6)return Object.assign({t:slot,i:hi,j:hj,l:lv,mat:m},ex)}}}
+  return Object.assign({t:slot,i:gi,j:gj,l:onR?L:Lf0,mat:m},ex)}
+ // лестница не ставится за уже стоящей стеной
+ if(!onR&&(ri!=ci||rj!=cj)){const wk=d==0?'w'+ci+','+(cj+1)+','+Lf0+',0':d==2?'w'+ci+','+cj+','+Lf0+',0':d==1?'w'+(ci+1)+','+cj+','+Lf0+',1':'w'+ci+','+cj+','+Lf0+',1';if(pieces.has(wk)){ri=ci;rj=cj}}
+ if(pt<-.75)return{t:'r',i:ci,j:cj,l:Math.max(0,Math.floor(me.y/H)),d,mat:m};return{t:'r',i:ri,j:rj,l:L,d,mat:m}}
 function rayTri(o,d,a,b,c){const e1=sub(b,a),e2=sub(c,a),p=cross(d,e2),det=dot(e1,p);if(Math.abs(det)<1e-9)return-1;const iv=1/det,t0=sub(o,a),u=dot(t0,p)*iv;if(u<0||u>1)return-1;const q=cross(t0,e1),v=dot(d,q)*iv;if(v<0||u+v>1)return-1;return dot(e2,q)*iv}
 function rayBox(o,d,b){let t0=0,t1=1e9;for(let k=0;k<3;k++){const iv=1/d[k];let a=(b[k]-o[k])*iv,c=(b[k+3]-o[k])*iv;if(a>c)[a,c]=[c,a];t0=Math.max(t0,a);t1=Math.min(t1,c);if(t0>t1)return-1}return t0}
 function raycast(o,d,maxT,onlyPieces){let best=null,bt=maxT;
