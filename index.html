@@ -87,7 +87,7 @@ h2{margin:0 0 6px}
  <button class="btn primary" id="bSolo">Одиночная игра <span>▶</span></button>
  <button class="btn" id="bOnline">Онлайн 1 на 1 <span>⚔</span></button>
  <button class="btn" id="bSet1">Настройки <span>⚙</span></button>
- <div class="ver">v0.7 · бег, стамина, присед, edit on release</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
+ <div class="ver">v0.8 · редакты как в Fortnite, баланс скорости</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
 </div></div>
 
 <div class="screen hide" id="online"><div class="panel">
@@ -135,7 +135,7 @@ h2{margin:0 0 6px}
 <script>
 "use strict";
 // ================= Конфиг =================
-const S=4,H=4,EYE=2.0,HEAD=2.3,R=0.45,GRAV=26,JUMP=8.5,SPEED=9;
+const S=4,H=4,EYE=2.0,HEAD=2.3,R=0.45,GRAV=26,JUMP=8.5,SPEED=5.6;
 const MATS=[{n:'Дерево',c:[.82,.58,.34],hp:150},{n:'Камень',c:[.70,.68,.72],hp:300},{n:'Металл',c:[.55,.63,.74],hp:500}];
 const W={
  ar:{name:'Автомат',dmg:30,rate:5.5,mag:30,reload:2.0,spread:.012,pellets:1,range:250,head:1.5,kick:.010,auto:true},
@@ -219,7 +219,7 @@ function collapseCheck(){const m=edgeMap(),seen=new Set(),q=[];for(const[k,p]of 
 // ================= Онлайн 1 на 1 (WebRTC через PeerJS) =================
 // Все изменения мира идут через dispatch(action) и пересылаются сопернику.
 // Попадания считает стрелок, урон применяет тот, в кого попали.
-const NET_VER=7,ROOM_PREFIX='frbld-v7-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
+const NET_VER=8,ROOM_PREFIX='frbld-v8-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
 const Net={online:false,host:false,me:'local',conn:null,peer:null,score:{me:0,op:0},ping:0,sendT:0,pingT:0,
  send(a){this.msg({t:'act',a})},
  msg(o){try{if(this.conn&&this.conn.open)this.conn.send(o)}catch(e){}},
@@ -394,6 +394,9 @@ function coneHt(mask,u,v){if(mask in CSL)return rampT(CSL[mask],u,v)*2;const hh=
  const a=CC[k],b=CC[(k+1)%4],det=(b[1]-.5)*(a[0]-.5)+(.5-b[0])*(a[1]-.5);
  const la=((b[1]-.5)*dx+(.5-b[0])*dz)/det,lb=((.5-a[1])*dx+(a[0]-.5)*dz)/det;return la*hh[k]+lb*hh[(k+1)%4]+(1-la-lb)}
 // распознавание редакта (как в Fortnite)
+// разрешённые редакты (как в Fortnite, вместе с зеркальными)
+const OK_EDITS={w:new Set([8,16,32,40,9,18,36,63,27,54,448,504]),f:new Set([1,2,4,8,3,12,5,10,7,11,13,14])};
+function validEdit(t,mask){if(!mask)return true;const s=OK_EDITS[t];return!s||s.has(mask)}
 function pattern(t,mask){if(!mask)return{type:'none',name:'Целая'};
  const cnt=x=>{let n=0;while(x){n+=x&1;x>>=1}return n};
  if(t=='f'){const n=cnt(mask);return{type:'hole',name:n==1?'Угол':n==2?([3,12,5,10].includes(mask)?'Полпола':'Диагональ'):n==3?'Четверть пола':'Пусто'}}
@@ -447,10 +450,10 @@ function finalize(p){const parts=[],{i,j,l}=p;p.pat=null;
 const animating=new Set();
 function applyAction(a){
  if(a.type=='build'){const k=keyOf(a.p);if(pieces.has(k)||a.p.l<0)return false;const p=Object.assign({mask:0},a.p);
-  p.maxhp=MATS[p.mat].hp;p.hp=p.maxhp;finalize(p);pieces.set(k,p);dirty=true;SFX.play('place',p.cen,.7);return true}
+  p.maxhp=MATS[p.mat].hp;p.hp=p.maxhp;finalize(p);pieces.set(k,p);dirty=true;liftT=.15;SFX.play('place',p.cen,.7);return true}
  if(a.type=='damage'){const p=pieces.get(a.k);if(!p)return false;p.hp-=a.dmg;dirty=true;
   if(p.hp<=0){pieces.delete(a.k);if(editP===p)editP=null;burst(p.cen,MATS[p.mat].c,16,5);SFX.play('breakP',p.cen);collapseCheck();return 'destroyed'}return true}
- if(a.type=='edit'){const p=pieces.get(a.k);if(!p)return false;SFX.play('edit',p.cen,.6);if(p.t=='r'){p.d=a.d;p.hs=a.hs==null?-1:a.hs}else if(p.t=='k')p.mask=a.mask;else{p.mask=a.mask;p.open=false;p.anim=0}finalize(p);dirty=true;return true}
+ if(a.type=='edit'){const p=pieces.get(a.k);if(!p)return false;liftT=.15;SFX.play('edit',p.cen,.6);if(p.t=='r'){p.d=a.d;p.hs=a.hs==null?-1:a.hs}else if(p.t=='k')p.mask=a.mask;else{p.mask=a.mask;p.open=false;p.anim=0}finalize(p);dirty=true;return true}
  if(a.type=='use'){const p=pieces.get(a.k);if(!p||!p.pat||p.pat.type!='door')return false;SFX.play('door',p.cen);p.open=!p.open;
   if(p.pat.type=='door')animating.add(p);else finalize(p);dirty=true;return true}
  if(a.type=='clear'){pieces.clear();editP=null;dirty=true;return true}}
@@ -490,7 +493,7 @@ function hitMarker(head){SFX.play(head?'head':'hitm');const h=document.getElemen
 
 // ================= Игрок =================
 const me={x:2,y:0,z:2,vy:0,yaw:0,pitch:0,onGround:true,sup:null,hp:100,sh:100,stam:100,stamCd:0,cr:false,crT:0,spr:false};
-let stepN=0,slot='ar',mat=0,mode='menu',prevScreen='menu',locked=false,firePressed=false,bindWait=null;
+let liftT=0,stepN=0,slot='ar',mat=0,mode='menu',prevScreen='menu',locked=false,firePressed=false,bindWait=null;
 const held={};const ammo={ar:30,sg:5};let cd=0,reloadT=0,castT=0,switchT=0,vmKick=0,swing=0,bob=0;
 let editP=null,editMask=0,editD=0,editPath=[],camInfo={e:[2,2,2],f:[0,0,1]},pendX=0,pendY=0,mvHist=[],skipMv=0,lockFail=false,editPaint=null,editChanged=false,editHover=-1;
 
@@ -579,7 +582,7 @@ function rampFromPath(path){if(path.length<2)return null;const a0=path[0]%2,c0=p
  if(c0==c1&&a0!=a1)d=a1>a0?1:3;else if(a0==a1&&c0!=c1)d=c1>c0?0:2;if(d===null)return null;return{d,hs:path.length==2?((d==0||d==2)?a0:c0):-1}}
 function confirmEdit(){const p=editP;if(!p)return;
  if(p.t=='r'){const r=rampFromPath(editPath);if(r)dispatch({type:'edit',k:keyOf(p),d:r.d,hs:r.hs})}
- else{const full=p.t=='w'?511:p.t=='f'?15:-1;if(editMask!==full&&editMask!==(p.mask||0))dispatch({type:'edit',k:keyOf(p),mask:editMask})}
+ else{if(!validEdit(p.t,editMask)){feed('Такого редакта нет — сброшено');SFX.play('hurt',null,.3)}else if(editMask!==(p.mask||0))dispatch({type:'edit',k:keyOf(p),mask:editMask})}
  endEdit()}
 function editTileAt(){const p=editP,ar=aimRay(),o=ar.o,d=ar.d,n=gridN(p);let t,u,v;
  if(p.t=='w'){if(p.ax==0){t=(p.j*S-o[2])/d[2];u=(o[0]+d[0]*t-p.i*S)/S}else{t=(p.i*S-o[0])/d[0];u=(o[2]+d[2]*t-p.j*S)/S}v=(o[1]+d[1]*t-p.l*H)/H}
@@ -716,18 +719,19 @@ function update(dt){
  {const s=.0022*settings.sens;me.yaw-=pendX*s;me.pitch=Math.max(-1.5,Math.min(1.5,me.pitch-pendY*s*(settings.invertY?-1:1)));pendX=pendY=0;camInfo=computeCam()}
  const fx=Math.sin(me.yaw),fz=Math.cos(me.yaw);let mx=0,mz=0;
  if(held.forward){mx+=fx;mz+=fz}if(held.back){mx-=fx;mz-=fz}if(held.right){mx-=fz;mz+=fx}if(held.left){mx+=fz;mz-=fx}
- const ml=Math.hypot(mx,mz),moving=ml>0;me.walk=(me.walk||0)+((moving&&me.onGround?1:0)-(me.walk||0))*Math.min(1,dt*10);let nx=me.x,nz=me.z;me.crT+=((me.cr?1:0)-me.crT)*Math.min(1,dt*12);me.spr=!!(held.sprint&&held.forward&&moving&&!me.cr&&me.stam>0&&castT<=0&&!(held.fire&&!isBuild(slot)&&!editP));if(me.spr){if(me.onGround)me.stam=Math.max(0,me.stam-22*dt);me.stamCd=1}else{me.stamCd-=dt;if(me.stamCd<=0)me.stam=Math.min(100,me.stam+30*dt)}const spd=SPEED*(me.spr?1.5:me.cr?.55:1);if(moving){nx+=mx/ml*spd*dt;nz+=mz/ml*spd*dt}
+ const ml=Math.hypot(mx,mz),moving=ml>0;me.walk=(me.walk||0)+((moving&&me.onGround?1:0)-(me.walk||0))*Math.min(1,dt*10);let nx=me.x,nz=me.z;me.crT+=((me.cr?1:0)-me.crT)*Math.min(1,dt*12);me.spr=!!(held.sprint&&held.forward&&moving&&!me.cr&&me.stam>0&&castT<=0&&!(held.fire&&!isBuild(slot)&&!editP));if(me.spr){if(me.onGround)me.stam=Math.max(0,me.stam-22*dt);me.stamCd=1}else{me.stamCd-=dt;if(me.stamCd<=0)me.stam=Math.min(100,me.stam+30*dt)}const spd=SPEED*(me.spr?1.3:me.cr?.6:1);if(moving){nx+=mx/ml*spd*dt;nz+=mz/ml*spd*dt}
  [nx,nz]=collideWalls(nx,nz,me.x,me.z,me.y);
  if(held.jump&&me.onGround){me.cr=false;me.vy=JUMP;me.onGround=false;SFX.play('jump',null,.5)}
  me.vy-=GRAV*dt;let ny=me.y+me.vy*dt;
  if(me.vy>0){const c=ceilingAt(nx,nz,me.y+HEAD,ny+HEAD);if(c<Infinity){ny=c-HEAD;me.vy=0}}
  const g=supportAt(nx,nz,Math.max(me.y,ny),.7),wasAir=!me.onGround,impact=-me.vy;
  if(ny<=g.h||(me.onGround&&me.vy<=0&&ny-g.h<.9)){ny=g.h;if(wasAir&&impact>8)SFX.play('land',null,Math.min(1,impact/25));if(wasAir&&impact>22)damagePlayer(Math.round((impact-22)*10),'падение с высоты',true);me.vy=0;me.onGround=true;me.sup=g.s}else{me.onGround=false;me.sup=null}
+ if(liftT>0){liftT-=dt;const g2=supportAt(nx,nz,ny,HEAD-.2);if(g2.h>ny+.05){ny=g2.h;me.vy=Math.max(0,me.vy);me.onGround=true;me.sup=g2.s}}
  me.x=nx;me.z=nz;me.y=ny;if(mode!='play')return;
  bob+=moving&&me.onGround?dt*(me.spr?13:me.cr?7:10):0;{const sn=Math.floor(bob/Math.PI);if(sn!=stepN){stepN=sn;SFX.play('step',null,.6)}}
  cd-=dt;switchT=Math.max(0,switchT-dt);vmKick=Math.max(0,vmKick-dt*8);swing=Math.max(0,swing-dt*3.5);
  if(reloadT>0){reloadT-=dt;if(reloadT<=0){reloadT=0;ammo[slot]=W[slot].mag}}
- if(editP){const kn=a=>keyName(settings.binds[a]),pn=editP.t=='r'?'Лестница — зажми '+kn('fire')+' и протяни по клеткам (2 клетки = полулестница)':'Будет: '+pattern(editP.t,editMask).name+' · '+kn('fire')+' — клетки';
+ if(editP){const kn=a=>keyName(settings.binds[a]),pn=editP.t=='r'?'Лестница — зажми '+kn('fire')+' и протяни по клеткам (2 клетки = полулестница)':'Будет: '+(validEdit(editP.t,editMask)?pattern(editP.t,editMask).name:'нельзя (сбросится)')+' · '+kn('fire')+' — клетки';
   $('tip').textContent='РЕДАКТ · '+pn+' · '+kn('edit')+' — подтвердить · '+kn('alt')+' — сброс';}
  if(editP){if(!pieces.has(keyOf(editP)))endEdit();else{editHover=editTileAt();
    if(editP.t=='r'){if(firePressed)editPath=[];if(held.fire&&editHover>=0&&!editPath.includes(editHover)){editPath.push(editHover);editChanged=true}}
@@ -771,7 +775,7 @@ function render(dt){
   if(p.t=='r'){const r=rampFromPath(editPath)||{d:p.d,hs:p.hs};addHex(prev,rampCorners(p.i,p.j,p.l,r.d,r.hs),[.55,.8,1])}
   if(p.t=='k')for(const c of coneParts(p.i,p.j,p.l,editMask))addHex(prev,c,[.55,.8,1]);
   for(let c=0;c<n;c++)for(let a=0;a<n;a++){const b=a+c*n,tb=editTileBox(p,a,c),on=p.t=='r'?editPath.includes(b):(editMask>>b&1);
-   if(on)addHex(sel,tb,[.22,.6,1]);else addHex(keep,tb,[.36,.66,.62]);if(b==editHover)addHex(hov,tb,[1,1,1])}
+   if(on)addHex(sel,tb,validEdit(p.t,editMask)?[.22,.6,1]:[1,.3,.3]);else addHex(keep,tb,[.36,.66,.62]);if(b==editHover)addHex(hov,tb,[1,1,1])}
   drawArr(prev,.35);drawArr(keep,.62);drawArr(sel,.42);drawArr(hov,.22)}
  else if(mode=='play'&&isBuild(slot)){const t=target();if(t.l>=0){const g=[],ex=pieces.has(keyOf(t)),tmp=Object.assign({mask:0},t),gc=ex?[1,.6,.2]:canPlace(t)?[.32,.7,1]:[1,.25,.25];
    if(t.t=='r')addHex(g,rampCorners(t.i,t.j,t.l,t.d),gc);else if(t.t=='k')for(const c of coneParts(t.i,t.j,t.l,0))addHex(g,c,gc);
