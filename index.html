@@ -95,7 +95,7 @@ h2{margin:0 0 6px}
  <button class="btn" id="bOnline">Онлайн 1 на 1 <span>⚔</span></button>
  <button class="btn" id="bLocker">Шкафчик <span>▣</span></button>
  <button class="btn" id="bSet1">Настройки <span>⚙</span></button>
- <div class="ver">v1.9 · карты и тренировочная зона</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
+ <div class="ver">v2.0 · персонажи и прозрачность</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
 </div></div>
 
 <div class="screen hide" id="mapSelect"><div class="panel">
@@ -245,7 +245,7 @@ function collapseCheck(){const m=edgeMap(),seen=new Set(),q=[];for(const[k,p]of 
 // ================= Онлайн 1 на 1 (WebRTC через PeerJS) =================
 // Все изменения мира идут через dispatch(action) и пересылаются сопернику.
 // Попадания считает стрелок, урон применяет тот, в кого попали.
-const NET_VER=19,ROOM_PREFIX='frbld-v19-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
+const NET_VER=20,ROOM_PREFIX='frbld-v20-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
 const Net={online:false,host:false,me:'local',conn:null,peer:null,score:{me:0,op:0},ping:0,sendT:0,pingT:0,
  send(a){this.msg({t:'act',a})},
  msg(o){try{if(this.conn&&this.conn.open)this.conn.send(o)}catch(e){}},
@@ -345,7 +345,7 @@ vec2 gw=gd/fwidth(gc);float ln=1.-clamp(min(gw.x,gw.y)-.6,0.,1.);
 float ln=min(gd.x,gd.y)<.012?1.:0.;
 #endif
 ln*=1.-smoothstep(60.,220.,length(wp-cam));col=mix(col,col*.6,ln);}
-else if(mt>.5){vec2 q=vuv;float e=min(min(q.x,1.-q.x),min(q.y,1.-q.y));
+else if(mt>.5){if(dot(normalize(vn),cam-wp)<0.)discard;vec2 q=vuv;float e=min(min(q.x,1.-q.x),min(q.y,1.-q.y));
  if(mt<1.5){float row=floor(q.y*6.),gy=fract(q.y*6.);col*=.82+.28*hs(vec2(row,3.1));
   float g=vno(vec2(q.x*3.+row*7.,gy*1.3))*.5+vno(vec2(q.x*38.+row*13.,gy*5.))*.5;col*=.8+.32*g;
   col*=.93+.09*(sin(q.x*30.+vno(vec2(q.x*5.,row*3.+gy))*6.)*.5+.5);
@@ -537,7 +537,8 @@ let statN=0,treeN=0;
 function uvFn(p){const{i,j,l}=p;if(p.t=='w')return p.ax==0?v=>[(v[0]-i*S)/S,(v[1]-l*H)/H]:v=>[(v[2]-j*S)/S,(v[1]-l*H)/H];
  if(p.t=='f'||p.t=='r'||p.t=='k')return v=>[(v[0]-i*S)/S,(v[2]-j*S)/S];return null}
 let glassN=0;B.glass=gl.createBuffer();
-const SB=[gl.createBuffer(),gl.createBuffer(),gl.createBuffer()],SN=[0,0,0];
+const SB=[gl.createBuffer(),gl.createBuffer(),gl.createBuffer()],SN=[0,0,0],TB=[gl.createBuffer(),gl.createBuffer(),gl.createBuffer()];
+let transparentBatches=[];
 // Объёмные ряды материала. Щели визуальные: коллизии и попадания используют целую поверхность.
 function materialBands(c,p){const N=p.parts.length>8?2:[6,4,3][p.mat],progress=Math.max(0,Math.min(1,p.hp/p.maxhp)),gap=.012+.035*(1-progress),out=[];
  const mix=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t);
@@ -550,12 +551,12 @@ function materialBands(c,p){const N=p.parts.length>8?2:[6,4,3][p.mat],progress=M
 function pieceGeo(arr,p,kk){const k=kk==null?.55+.45*p.hp/p.maxhp:kk,base=MATS[p.mat].c,uf=uvFn(p);
  for(const pt of p.parts){const col=(pt.col||base.map(x=>x*pt.k)).map(x=>x*k),band=pt.k==1;
   if(band){for(const c of materialBands(pt.c,p))addHexUV(arr,c,col,uf)}else addHexUV(arr,pt.c,col,pt.k==1?uf:null)}}
-function rebuild(){const A=[[],[],[]],g=[];for(const p of pieces.values()){if(p===editP||building.has(p))continue;pieceGeo(A[p.mat],p);for(const c of p.glass)addHex(g,c,[.6,.85,1])}
+function rebuild(){const A=[[],[],[]],g=[];transparentBatches=[];for(const p of pieces.values()){if(p===editP||building.has(p))continue;const start=A[p.mat].length/11;pieceGeo(A[p.mat],p);transparentBatches.push({p,buf:SB[p.mat],start,count:A[p.mat].length/11-start,alpha:.58});for(const c of p.glass)addHex(g,c,[.6,.85,1])}
  for(let m=0;m<3;m++){gl.bindBuffer(gl.ARRAY_BUFFER,SB[m]);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(A[m]),gl.STATIC_DRAW);SN[m]=A[m].length/11}statN=SN[0]+SN[1]+SN[2];
  gl.bindBuffer(gl.ARRAY_BUFFER,B.glass);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(g.length?g:[0,0,0,0,1,0,0,0,0,0,0]),gl.STATIC_DRAW);glassN=g.length/11;dirty=false}
 function bindAttrs(b){gl.bindBuffer(gl.ARRAY_BUFFER,b);const st=44;
  for(const[k,o,n]of[['p',0,3],['n',12,3],['c',24,3],['uv',36,2]]){gl.enableVertexAttribArray(PA[k]);gl.vertexAttribPointer(PA[k],n,gl.FLOAT,false,st,o)}}
-function draw(buf,n,alpha,grid,mt){if(!n)return;gl.uniform1f(PU.a,alpha);gl.uniform1f(PU.mt,mt||0);gl.uniform1f(PU.grid,grid?1:0);bindAttrs(buf);gl.drawArrays(gl.TRIANGLES,0,n)}
+function draw(buf,n,alpha,grid,mt,start=0){if(!n)return;gl.uniform1f(PU.a,alpha);gl.uniform1f(PU.mt,mt||0);gl.uniform1f(PU.grid,grid?1:0);bindAttrs(buf);gl.drawArrays(gl.TRIANGLES,start,n)}
 function drawArr(arr,alpha,mt){if(!arr.length)return;gl.bindBuffer(gl.ARRAY_BUFFER,B.dyn);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(arr),gl.DYNAMIC_DRAW);draw(B.dyn,arr.length/11,alpha,false,mt)}
 
 // ================= Манекены и эффекты =================
@@ -674,7 +675,7 @@ function damageDummy(dm,dmg,head,pt){let rest=dmg;dm.flash=.1;if(dm.sh>0){const 
 // ================= Оружие =================
 // Камера задаёт прицел; выстрел идёт от правого плеча, которое не проходит сквозь стену.
 function shotRay(w){const ar=CFN.silentRay(aimRay()),h=raycast(ar.o,ar.d,w.range||250),t=h?Math.min(w.range||250,h.t+.2):(w.range||250),target=ar.o.map((v,i)=>v+ar.d[i]*t),center=[me.x,me.y+EYE-.55*(me.crT||0),me.z];
- const side=[-Math.cos(me.yaw),0,Math.sin(me.yaw)],maxSide=settings.thirdPerson&&!w.melee?.9:0,block=maxSide?raycast(center,side,maxSide,true):null,offset=block?Math.max(0,block.t-.04):maxSide;
+ const side=[-Math.cos(me.yaw),0,Math.sin(me.yaw)],maxSide=settings.thirdPerson&&!w.melee?.75:0,block=maxSide?raycast(center,side,maxSide,true):null,offset=block?Math.max(0,block.t-.04):maxSide;
  const o=center.map((v,i)=>v+side[i]*offset),v=sub(target,o);return{o,d:Math.hypot(...v)>1e-5?norm(v):ar.d}}
 function fire(){const w=W[slot];const AR=shotRay(w),o=AR.o,f=AR.d,r=norm(cross(f,[0,1,0])),u=cross(r,f);
  if(!w.melee){if(reloadT>0)return;if(ammo[slot]<=0){startReload();return}ammo[slot]--}
@@ -735,25 +736,32 @@ function charGeo(out,st0){const st=st0||myState(),me=st,slot=st.slot,bob=st.bob,
  else if(isBuild(slot)){aR=-1.1-P*.6;aL=-legA*.8}
  else if(castT>0){aR=aL=-1.2}else{aR=legA*.8-.3;aL=-legA*.8}
  if(validCos(st.skin,SKINS.length)===1){
-  const skin=[.34,.20,.14],hair=[.10,.075,.065],shirt=[.89,.89,.85],pants=[.34,.36,.35],dark=[.12,.13,.14],strap=[.45,.44,.40],hat=[.25,.27,.26],band=[.64,.60,.49],gold=[.91,.72,.30],teal=[.14,.69,.67];
+  const skin=[.38,.23,.16],light=[.47,.29,.21],hair=[.105,.075,.065],shirt=[.91,.91,.87],seam=[.66,.67,.64],pants=[.37,.39,.38],dark=[.12,.13,.14],strap=[.48,.47,.42],hat=[.25,.27,.26],band=[.64,.60,.49],gold=[.91,.72,.30],teal=[.14,.69,.67],white=[.90,.90,.85];
   for(const s of[1,-1]){const cx=s*.15,pv=[1,0,legA*s];
-   Bx(cx-.13,0,-.14,cx+.13,.07,.22,dark,pv);Bx(cx-.125,.07,-.13,cx+.125,.28,.20,dark,pv);
-   Bx(cx-.115,.28,-.12,cx+.115,1,.12,pants,pv);
+   Bx(cx-.13,0,-.14,cx+.13,.06,.22,dark,pv);Bx(cx-.125,.06,-.13,cx+.125,.28,.20,dark,pv);
+   Bx(cx-.115,.28,-.12,cx+.115,1,.12,pants,pv);Bx(cx-.10,.84,-.125,cx+.1,.96,-.12,seam,pv);
    Bx(cx-.12,.69,-.125,cx+.12,.735,.125,strap,pv);Bx(cx-.12,.78,-.125,cx+.12,.82,.125,strap,pv);
    Bx(cx-.13,.48,.115,cx+.13,.61,.16,strap,pv);Bx(cx-.10,.30,.12,cx+.10,.48,.155,dark,pv);
+   Bx(cx-.09,.1,.2,cx+.09,.12,.21,strap,pv);
    const hx=s>0?[cx+.11,cx+.18]:[cx-.18,cx-.11];Bx(hx[0],.68,-.09,hx[1],.9,.08,strap,pv)}
+  // Фигура: приталенный верх, пояс и слегка более широкая линия бёдер.
   Bx(-.26,.98,-.145,.26,1.08,.145,dark);Bx(-.055,1.00,.145,.055,1.075,.16,band);
-  Bx(-.25,1.08,-.13,.25,1.68,.13,shirt);
-  Bx(-.22,1.14,-.145,-.15,1.67,.145,strap);Bx(.15,1.14,-.145,.22,1.67,.145,strap);
-  Bx(-.22,1.49,-.15,.22,1.56,-.135,strap);Bx(-.12,1.42,.13,.12,1.48,.15,strap);
+  Bx(-.235,1.08,-.13,.235,1.24,.13,shirt);Bx(-.205,1.24,-.125,.205,1.40,.135,shirt);Bx(-.235,1.40,-.13,.235,1.62,.155,shirt);Bx(-.21,1.62,-.12,.21,1.70,.13,shirt);
+  Bx(-.205,1.14,-.145,-.15,1.67,.16,strap);Bx(.15,1.14,-.145,.205,1.67,.16,strap);
+  Bx(-.205,1.49,-.15,.205,1.55,-.135,strap);Bx(-.105,1.42,.155,.105,1.47,.17,strap);
   Bx(-.07,1.68,-.06,.07,1.80,.06,skin);
   const hp=[1.78,0,-P*.45];
-  Bx(-.165,1.78,-.15,.165,2.14,.15,skin,hp);Bx(-.17,1.87,-.17,.17,2.13,-.12,hair,hp);
-  Bx(-.115,1.97,.151,-.065,2.005,.16,dark,hp);Bx(.065,1.97,.151,.115,2.005,.16,dark,hp);
+  Bx(-.155,1.78,-.14,.155,2.14,.15,skin,hp);
+  Bx(-.17,1.86,-.17,.17,2.13,-.11,hair,hp);Bx(-.18,1.88,-.10,-.145,2.105,.045,hair,hp);Bx(.145,1.88,-.10,.18,2.105,.045,hair,hp);
+  Bx(-.14,1.985,.151,-.055,2.015,.16,white,hp);Bx(.055,1.985,.151,.14,2.015,.16,white,hp);
+  Bx(-.104,1.986,.161,-.074,2.016,.167,hair,hp);Bx(.074,1.986,.161,.104,2.016,.167,hair,hp);
+  Bx(-.14,2.03,.151,-.055,2.047,.163,hair,hp);Bx(.055,2.03,.151,.14,2.047,.163,hair,hp);
+  Bx(-.025,1.91,.15,.025,1.96,.176,light,hp);Bx(-.055,1.865,.152,.055,1.882,.16,[.38,.15,.15],hp);
   Bx(-.23,2.115,-.23,.23,2.16,.23,hat,hp);Bx(-.185,2.15,-.18,.185,2.34,.18,hat,hp);
   Bx(-.19,2.17,-.185,.19,2.22,.185,band,hp);Bx(-.04,2.22,.181,.04,2.30,.191,gold,hp);
-  for(const s of[1,-1]){const sx=s*.355,pv=[1.66,0,s>0?aL:aR];Bx(sx-.08,1.17,-.085,sx+.08,1.69,.085,skin,pv);
-   Bx(sx-.085,1.05,-.09,sx+.085,1.18,.09,s>0?teal:strap,pv);Bx(sx-.08,.95,-.08,sx+.08,1.07,.08,dark,pv)}
+  for(const s of[1,-1]){const sx=s*.34,pv=[1.66,0,s>0?aL:aR];Bx(sx-.075,1.17,-.08,sx+.075,1.69,.08,skin,pv);
+   Bx(sx-.08,1.05,-.085,sx+.08,1.18,.085,s>0?teal:strap,pv);Bx(sx-.075,.95,-.08,sx+.075,1.07,.08,dark,pv);
+   if(s>0)Bx(sx-.045,1.09,.085,sx+.045,1.14,.097,[.45,.9,.85],pv)}
   return Wp(rx([-.37,1.0,0],1.66,0,aR));
  }
  for(const s of[1,-1]){const cx=s*.15,pv=[1.0,0,legA*s];
@@ -772,8 +780,13 @@ function charGeo(out,st0){const st=st0||myState(),me=st,slot=st.slot,bob=st.bob,
  Bx(-.19,1.98,-.19,.19,2.3,.17,CH.helm,hp);Bx(-.19,1.84,-.19,.19,1.98,-.05,CH.helm,hp);
  Bx(.18,1.86,-.09,.23,2.06,.08,CH.helm,hp);Bx(-.23,1.86,-.09,-.18,2.06,.08,CH.helm,hp);
  Bx(-.05,2.29,-.19,.05,2.32,.17,CH.orange,hp);Bx(-.05,2.18,.17,.05,2.3,.18,CH.orange,hp);Bx(-.17,2.0,.15,.17,2.1,.2,CH.visor,hp);
+ Bx(-.14,2.075,.201,.14,2.09,.21,CH.metal,hp);Bx(-.14,2.005,.201,.14,2.02,.21,CH.gray,hp);
+ Bx(-.145,1.91,.162,-.07,1.94,.173,CH.black,hp);Bx(.07,1.91,.162,.145,1.94,.173,CH.black,hp);
+ Bx(-.22,2.05,-.12,-.19,2.18,.07,CH.gray,hp);Bx(.19,2.05,-.12,.22,2.18,.07,CH.gray,hp);
+ Bx(-.21,1.22,-.175,.21,1.53,-.161,CH.camoD);Bx(-.18,1.27,-.184,-.04,1.43,-.174,CH.olive);Bx(.04,1.27,-.184,.18,1.43,-.174,CH.olive);
+ Bx(-.055,1.20,-.184,.055,1.33,-.174,CH.gray);Bx(-.20,1.54,.157,-.12,1.60,.175,CH.metal);Bx(.12,1.54,.157,.20,1.60,.175,CH.metal);
  for(const s of[1,-1]){const sx=s*.37,pv=[1.66,0,s>0?aL:aR];
-  Bx(sx-.09,1.18,-.09,sx+.09,1.72,.09,CH.olive,pv);Bx(sx-.095,1.12,-.095,sx+.095,1.2,.095,CH.gray,pv);Bx(sx-.075,.95,-.075,sx+.075,1.12,.075,CH.black,pv)}
+  Bx(sx-.09,1.18,-.09,sx+.09,1.72,.09,CH.olive,pv);Bx(sx-.105,1.53,-.105,sx+.105,1.68,.105,CH.camoD,pv);Bx(sx-.055,1.57,.105,sx+.055,1.62,.12,CH.orange,pv);Bx(sx-.095,1.12,-.095,sx+.095,1.2,.095,CH.gray,pv);Bx(sx-.075,.95,-.075,sx+.075,1.12,.075,CH.black,pv)}
  return Wp(rx([-.37,1.0,0],1.66,0,aR))}
 
 // ================= Вьюмодель =================
@@ -825,7 +838,7 @@ function lockerPreview(){const cv=$('lockerCanvas');try{let g=lockerGl;if(!g){g=
  const shader=(type,src)=>{const h=g.createShader(type);g.shaderSource(h,src);g.compileShader(h);if(!g.getShaderParameter(h,g.COMPILE_STATUS))throw Error(g.getShaderInfoLog(h));return h};
  const pr=lockerProg=g.createProgram();g.attachShader(pr,shader(g.VERTEX_SHADER,'attribute vec3 p;attribute vec3 n;attribute vec3 c;uniform mat4 m;varying vec3 col;void main(){float d=max(dot(normalize(n),normalize(vec3(-.5,.8,.6))),0.);col=c*(.55+.5*d);gl_Position=m*vec4(p,1.);}'));g.attachShader(pr,shader(g.FRAGMENT_SHADER,'precision mediump float;varying vec3 col;void main(){gl_FragColor=vec4(col,1.);}'));g.linkProgram(pr);if(!g.getProgramParameter(pr,g.LINK_STATUS))throw Error(g.getProgramInfoLog(pr));lockerBuffer=g.createBuffer()}
  const dpr=Math.min(devicePixelRatio||1,2),box=cv.getBoundingClientRect();cv.width=Math.max(1,Math.round(box.width*dpr));cv.height=Math.max(1,Math.round(box.height*dpr));g.viewport(0,0,cv.width,cv.height);g.clearColor(0,0,0,0);g.clear(g.COLOR_BUFFER_BIT|g.DEPTH_BUFFER_BIT);g.enable(g.DEPTH_TEST);g.useProgram(lockerProg);
- const st={x:0,y:0,z:0,yaw:-.28,pitch:0,walk:0,onGround:true,slot:'pick',bob:0,swing:0,kick:0,cast:0,play:true,cr:0,skin:settings.skin,pick:settings.pick},geo=[],hand=charGeo(geo,st),eye=[3,2.7,5.2],dir=norm(sub([0,1.15,0],eye)),M=mul(persp(.65,cv.width/cv.height,.1,30),look(eye,dir,[0,1,0]));
+ const st={x:0,y:0,z:0,yaw:-.28,pitch:0,walk:0,onGround:true,slot:'pick',bob:0,swing:0,kick:0,cast:0,play:true,cr:0,skin:settings.skin,pick:settings.pick},geo=[],hand=charGeo(geo,st),eye=[3,2.7,5.2],dir=norm(sub([0,1.15,0],eye)),M=mul(persp(.55,cv.width/cv.height,.1,30),look(eye,dir,[0,1,0]));
  const draw=(data,m)=>{g.bindBuffer(g.ARRAY_BUFFER,lockerBuffer);g.bufferData(g.ARRAY_BUFFER,new Float32Array(data),g.DYNAMIC_DRAW);for(const [a,off]of[['p',0],['n',12],['c',24]]){const loc=g.getAttribLocation(lockerProg,a);g.enableVertexAttribArray(loc);g.vertexAttribPointer(loc,3,g.FLOAT,false,44,off)}g.uniformMatrix4fv(g.getUniformLocation(lockerProg,'m'),false,m);g.drawArrays(g.TRIANGLES,0,data.length/11)};
  draw(geo,M);const Mg=mul(M,mul(trans(...hand),mul(rotY(st.yaw+Math.PI),trans(0,.1,.3))));draw(vmGeo('pick',settings.pick),Mg)
  }catch(e){console.warn('Locker preview:',e)}}
@@ -959,7 +972,7 @@ function render(dt){
  gl.depthMask(false);gl.drawArrays(gl.TRIANGLES,0,3);gl.depthMask(true);gl.disableVertexAttribArray(SA);
  // мир
  gl.useProgram(P);const M=mul(persp(fy,asp,.1,900),look(e,f,[0,1,0]));gl.uniformMatrix4fv(PU.m,false,M);gl.uniform3fv(PU.cam,e);
- draw(B.ground,6,1,true);draw(B.trees,treeN,1,false);if(dirty)rebuild();for(let m=0;m<3;m++)draw(SB[m],SN[m],1,false,m+1);
+ draw(B.ground,6,1,true);draw(B.trees,treeN,1,false);if(dirty)rebuild();
  const dyn=[];for(const dm of dummies){if(dm.dead>0||Net.online||currentMap!=='training')continue;const c=dm.flash>0?[1,1,1]:[.98,.55,.22];const bx=dBoxes(dm);addHex(dyn,boxC(...bx[0]),c);addHex(dyn,boxC(...bx[1]),dm.flash>0?[1,1,1]:[.98,.85,.65]);
   addHex(dyn,boxC(dm.x-.6,0,dm.z-.6,dm.x+.6,.15,dm.z+.6),[.3,.3,.35])}
  for(const p of parts){const s=.09;addHex(dyn,boxC(p.p[0]-s,p.p[1]-s,p.p[2]-s,p.p[0]+s,p.p[1]+s,p.p[2]+s),p.col)}
@@ -970,7 +983,10 @@ function render(dt){
  if(tracers.length){const tr=[];for(const t of tracers)addHex(tr,beamC(t.a,t.b,.025),t.col||[1,.92,.55]);drawArr(tr,.85)}
  gl.depthMask(false);draw(B.glass,glassN,.32,false);gl.depthMask(true);
  if(frags.length){const fg=[];fragGeo(fg);drawArr(fg,1)}
- if(building.size){const groups=[[],[],[]];for(const p of building)if(p!==editP)pieceGeo(groups[p.mat],p);for(let m=0;m<3;m++)drawArr(groups[m],1,m+1)}
+ // Полупрозрачные поверхности рисуются после персонажей: столкновения и лучи не меняются.
+ const batches=transparentBatches.slice();if(building.size){const groups=[[],[],[]];for(const p of building)if(p!==editP){const start=groups[p.mat].length/11;pieceGeo(groups[p.mat],p);batches.push({p,buf:TB[p.mat],start,count:groups[p.mat].length/11-start,alpha:.42+.16*p.bt})}for(let m=0;m<3;m++){gl.bindBuffer(gl.ARRAY_BUFFER,TB[m]);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(groups[m]),gl.DYNAMIC_DRAW)}}
+ batches.sort((a,b)=>{const d=p=>(p.cen[0]-e[0])**2+(p.cen[1]-e[1])**2+(p.cen[2]-e[2])**2;return d(b.p)-d(a.p)});
+ gl.depthMask(false);for(const q of batches)draw(q.buf,q.count,q.alpha,false,q.p.mat+1,q.start);gl.depthMask(true);
  // призрак постройки / редакт
  gl.depthMask(false);
  if(mode=='play'&&editP){const p=editP,n=gridN(p),keep=[],sel=[],hov=[],prev=[];
