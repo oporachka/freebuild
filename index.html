@@ -87,7 +87,7 @@ h2{margin:0 0 6px}
  <button class="btn primary" id="bSolo">Одиночная игра <span>▶</span></button>
  <button class="btn" id="bOnline">Онлайн 1 на 1 <span>⚔</span></button>
  <button class="btn" id="bSet1">Настройки <span>⚙</span></button>
- <div class="ver">v1.4 · дурка в конусе, фикс прохода сквозь рампы</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
+ <div class="ver">v1.5 · пика, сборка построек, новые материалы</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
 </div></div>
 
 <div class="screen hide" id="online"><div class="panel">
@@ -136,11 +136,11 @@ h2{margin:0 0 6px}
 "use strict";
 // ================= Конфиг =================
 const S=4,H=4,EYE=2.0,HEAD=2.3,R=0.45,GRAV=26,JUMP=8.5,SPEED=5.6;
-const MATS=[{n:'Дерево',c:[.82,.58,.34],hp:150},{n:'Камень',c:[.70,.68,.72],hp:300},{n:'Металл',c:[.55,.63,.74],hp:500}];
+const MATS=[{n:'Дерево',c:[.80,.56,.33],hp:150,bt:1.2},{n:'Камень',c:[.66,.65,.66],hp:300,bt:2},{n:'Металл',c:[.60,.66,.74],hp:500,bt:3}];
 const W={
- ar:{name:'Автомат',dmg:30,rate:5.5,mag:30,reload:2.0,spread:.012,pellets:1,range:250,head:1.5,kick:.010,auto:true},
- sg:{name:'Дробовик',dmg:11,rate:1.1,mag:5,reload:2.6,spread:.075,pellets:10,range:45,head:2,kick:.05},
- pick:{name:'Кирка',dmg:50,rate:1.7,melee:true,range:4.5,pellets:1,spread:0,head:1,kick:0,auto:true},
+ ar:{name:'Автомат',dmg:30,bdmg:14,rate:5.5,mag:30,reload:2.0,spread:.012,pellets:1,range:250,head:1.5,kick:.010,auto:true},
+ sg:{name:'Дробовик',dmg:11,bdmg:4,rate:1.1,mag:5,reload:2.6,spread:.075,pellets:10,range:45,head:2,kick:.05},
+ pick:{name:'Кирка',dmg:20,bdmg:80,rate:1.7,melee:true,range:4.5,pellets:1,spread:0,head:1,kick:0,auto:true},
  med:{name:'Аптечка',heal:'hp',amount:50,cast:2.5},
  pot:{name:'Зелье щита',heal:'sh',amount:50,cast:2.0}};
 const SLOTS=['ar','sg','pick','med','pot','w','f','r','k'];
@@ -221,7 +221,7 @@ function collapseCheck(){const m=edgeMap(),seen=new Set(),q=[];for(const[k,p]of 
 // ================= Онлайн 1 на 1 (WebRTC через PeerJS) =================
 // Все изменения мира идут через dispatch(action) и пересылаются сопернику.
 // Попадания считает стрелок, урон применяет тот, в кого попали.
-const NET_VER=14,ROOM_PREFIX='frbld-v14-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
+const NET_VER=15,ROOM_PREFIX='frbld-v15-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
 const Net={online:false,host:false,me:'local',conn:null,peer:null,score:{me:0,op:0},ping:0,sendT:0,pingT:0,
  send(a){this.msg({t:'act',a})},
  msg(o){try{if(this.conn&&this.conn.open)this.conn.send(o)}catch(e){}},
@@ -273,7 +273,7 @@ function netHandle(m){if(!m||typeof m!='object')return;
   if(!m.ack)Net.msg({t:'hello',ack:true,nick:settings.nick||'Игрок',ver:NET_VER});
   if(!Net.online){if(Net.host)Net.msg({t:'world',p:[...pieces.values()].map(p=>({t:p.t,i:p.i,j:p.j,l:p.l,ax:p.ax,d:p.d,hs:p.hs,mask:p.mask,mat:p.mat,hp:p.hp,open:p.open,own:p.own}))});startMatch(m.nick)}break;
  case 'full':Net.status('В этой комнате уже играют двое.');break;
- case 'world':SFX.muted=true;pieces.clear();editP=null;for(const q of m.p||[]){const p=Object.assign({},q);if(dispatch({type:'build',p},true)){const z=pieces.get(keyOf(p));if(z){z.hp=q.hp;if(q.open){z.open=true;z.anim=1;finalize(z)}}}}SFX.muted=false;dirty=true;break;
+ case 'world':SFX.muted=true;pieces.clear();editP=null;for(const q of m.p||[]){const p=Object.assign({},q);if(dispatch({type:'build',p},true)){const z=pieces.get(keyOf(p));if(z){z.hp=q.hp;z.bt=1;building.delete(z);if(q.open){z.open=true;z.anim=1;finalize(z)}}}}SFX.muted=false;dirty=true;break;
  case 'act':if(m.a&&m.a.type!='clear')dispatch(m.a,true);break;
  case 'st':{const q=m.s;if(!q)return;rp.hp=q.hp;rp.sh=q.sh;const wasDead=rp.dead;rp.dead=!!q.dead;rp.tgt=q;if(!rp.st||wasDead&&!rp.dead||!rp.vis)rp.st=Object.assign({},q);rp.vis=true;break}
  case 'hit':if(mode=='dead'||!Net.online)return;damagePlayer(+m.dmg||0,(m.w||'выстрел')+' от '+rp.nick+(m.head?' (в голову)':''));break;
@@ -309,7 +309,9 @@ const P=prog(`attribute vec3 p;attribute vec3 n;attribute vec3 c;attribute vec2 
 varying vec3 vn;varying vec3 vc;varying vec3 wp;varying vec2 vuv;
 void main(){vn=n;vc=c;wp=p;vuv=uv;gl_Position=m*vec4(p,1.);}`,
 (DERIV?'#extension GL_OES_standard_derivatives : enable\n':'')+`precision mediump float;varying vec3 vn;varying vec3 vc;varying vec3 wp;varying vec2 vuv;
-uniform float a;uniform float grid;uniform vec3 cam;
+uniform float a;uniform float grid;uniform vec3 cam;uniform float mt;
+float hs(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float vno(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hs(i),hs(i+vec2(1.,0.)),f.x),mix(hs(i+vec2(0.,1.)),hs(i+vec2(1.,1.)),f.x),f.y);}
 void main(){vec3 L=normalize(vec3(-.55,.55,-.83));float d=max(dot(normalize(vn),L),0.);
 vec3 col=vc*(vec3(.42,.36,.52)+d*vec3(1.,.76,.55)*.78);
 if(grid>.5){vec2 gc=wp.xz/4.;vec2 gd=abs(fract(gc-.5)-.5);
@@ -319,10 +321,23 @@ vec2 gw=gd/fwidth(gc);float ln=1.-clamp(min(gw.x,gw.y)-.6,0.,1.);
 float ln=min(gd.x,gd.y)<.012?1.:0.;
 #endif
 ln*=1.-smoothstep(60.,220.,length(wp-cam));col=mix(col,col*.6,ln);}
+else if(mt>.5){vec2 q=vuv;float e=min(min(q.x,1.-q.x),min(q.y,1.-q.y));
+ if(mt<1.5){float row=floor(q.y*6.),gy=fract(q.y*6.);col*=.82+.28*hs(vec2(row,3.1));
+  float g=vno(vec2(q.x*3.+row*7.,gy*1.3))*.5+vno(vec2(q.x*38.+row*13.,gy*5.))*.5;col*=.8+.32*g;
+  col*=.93+.09*(sin(q.x*30.+vno(vec2(q.x*5.,row*3.+gy))*6.)*.5+.5);
+  if(gy<.06)col*=.5;float nx=fract(q.x*2.+hs(vec2(row,1.))*.5);if(abs(gy-.5)<.07&&(nx<.03||nx>.97))col*=.35;}
+ else if(mt<2.5){vec2 g=q*vec2(4.,4.);float r=floor(g.y);g.x+=mod(r,2.)*.5;vec2 c=floor(g),f=fract(g);
+  float mo=min(min(f.x,1.-f.x),min(f.y,1.-f.y));col*=.78+.34*hs(c);col*=.82+.3*vno(q*40.)+.08*vno(q*9.);
+  if(mo<.06)col*=.42;else if(mo<.12)col*=.82;}
+ else{vec2 g=fract(q*2.);float mo=min(min(g.x,1.-g.x),min(g.y,1.-g.y));col*=.9+.12*vno(vec2(q.x*2.,q.y*60.));
+  col+=vec3(.12,.13,.15)*pow(max(dot(reflect(-L,normalize(vn)),normalize(cam-wp)),0.),14.);
+  if(mo<.03)col*=.45;vec2 rv=abs(g-.09);vec2 rv2=abs(g-.91);if(length(min(rv,rv2))<.035)col=col*.7+.18;
+  if(abs(q.x-q.y)<.012||abs(q.x+q.y-1.)<.012)col*=.75;}
+ if(e<.035)col*=.55;}
 else{float e=min(min(vuv.x,1.-vuv.x),min(vuv.y,1.-vuv.y));if(e<.045)col*=.6;if(fract(vuv.y*5.)<.05)col*=.86;}
 float f=clamp(length(wp-cam)/260.,0.,1.);col=mix(col,vec3(.9,.52,.44),f*f);gl_FragColor=vec4(col,a);}`);
 const PA={p:gl.getAttribLocation(P,'p'),n:gl.getAttribLocation(P,'n'),c:gl.getAttribLocation(P,'c'),uv:gl.getAttribLocation(P,'uv')};
-const PU={m:gl.getUniformLocation(P,'m'),a:gl.getUniformLocation(P,'a'),grid:gl.getUniformLocation(P,'grid'),cam:gl.getUniformLocation(P,'cam')};
+const PU={m:gl.getUniformLocation(P,'m'),a:gl.getUniformLocation(P,'a'),grid:gl.getUniformLocation(P,'grid'),cam:gl.getUniformLocation(P,'cam'),mt:gl.getUniformLocation(P,'mt')};
 const SKY=prog(`attribute vec2 q;varying vec2 sc;void main(){sc=q;gl_Position=vec4(q,.999,1.);}`,
 `#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
@@ -389,10 +404,12 @@ function doorBox(p,hinge,th,s0,s1,t0,t1,y0,y1){const cs=Math.cos(th),sn=Math.sin
 // конус: 4 угла (биты 0:x0z0 1:x1z0 2:x0z1 3:x1z1), выбранные углы поднимаются до вершины
 const coneH=m=>[m&1?1:0,m&2?1:0,m&8?1:0,m&4?1:0],CC=[[0,0],[1,0],[1,1],[0,1]];
 const CSL={12:0,10:1,3:2,5:3};
-function coneParts(i,j,l,mask){if(mask in CSL)return[rampCorners(i,j,l,CSL[mask])];const x0=i*S,z0=j*S,yb=l*H+.02,pk=H/2,hh=coneH(mask),out=[],xc=x0+S/2,zc=z0+S/2;
+const PK={1:[0,0],2:[1,0],4:[0,1],8:[1,1]};const pkT=(m,u,v)=>{const c=PK[m];return((c[0]?u:1-u)+(c[1]?v:1-v))/2};
+function coneParts(i,j,l,mask){if(mask in CSL)return[rampCorners(i,j,l,CSL[mask])];
+ if(mask in PK){const o=[];for(let k=0;k<8;k++){const u=[0,1,1,0][k%4],v=[0,0,1,1][k%4];o.push([(i+u)*S,l*H+pkT(mask,u,v)*H+(k<4?-.15:.1),(j+v)*S])}return[o]}const x0=i*S,z0=j*S,yb=l*H+.02,pk=H/2,hh=coneH(mask),out=[],xc=x0+S/2,zc=z0+S/2;
  for(let k=0;k<4;k++){const a=CC[k],b=CC[(k+1)%4],ha=yb+hh[k]*pk,hb=yb+hh[(k+1)%4]*pk,hc=yb+pk,ax=x0+a[0]*S,az=z0+a[1]*S,bx=x0+b[0]*S,bz=z0+b[1]*S;
   out.push([[ax,yb,az],[bx,yb,bz],[xc,yb,zc],[xc,yb,zc],[ax,ha,az],[bx,hb,bz],[xc,hc,zc],[xc,hc,zc]])}return out}
-function coneHt(mask,u,v){if(mask in CSL)return rampT(CSL[mask],u,v)*2;const hh=coneH(mask),dx=u-.5,dz=v-.5;let k;if(Math.abs(dz)>=Math.abs(dx))k=dz<0?0:2;else k=dx>0?1:3;
+function coneHt(mask,u,v){if(mask in CSL)return rampT(CSL[mask],u,v)*2;if(mask in PK)return pkT(mask,u,v)*2+.16/H;const hh=coneH(mask),dx=u-.5,dz=v-.5;let k;if(Math.abs(dz)>=Math.abs(dx))k=dz<0?0:2;else k=dx>0?1:3;
  const a=CC[k],b=CC[(k+1)%4],det=(b[1]-.5)*(a[0]-.5)+(.5-b[0])*(a[1]-.5);
  const la=((b[1]-.5)*dx+(.5-b[0])*dz)/det,lb=((.5-a[1])*dx+(a[0]-.5)*dz)/det;return la*hh[k]+lb*hh[(k+1)%4]+(1-la-lb)}
 // распознавание редакта (как в Fortnite)
@@ -403,7 +420,7 @@ function validEdit(t,mask){if(!mask)return true;const s=OK_EDITS[t];return!s||s.
 function pattern(t,mask){if(!mask)return{type:'none',name:'Целая'};
  const cnt=x=>{let n=0;while(x){n+=x&1;x>>=1}return n};
  if(t=='f'){const n=cnt(mask);return{type:'hole',name:n==1?'Угол':n==2?([3,12,5,10].includes(mask)?'Полпола':'Диагональ'):n==3?'Четверть пола':'Пусто'}}
- if(t=='k'){const n=cnt(mask);return{type:'cone',name:n==1?'Скат угла (с полом — дурка)':n==2?([3,12,5,10].includes(mask)?'Скат (как рампа)':'Седло'):n==3?'Угол крыши':'Плоская крыша'}}
+ if(t=='k'){const n=cnt(mask);return{type:'cone',name:n==1?'Пика (с полом — дурка)':n==2?([3,12,5,10].includes(mask)?'Скат (как рампа)':'Седло'):n==3?'Угол крыши':'Плоская крыша'}}
  for(let a=0;a<3;a++)if(mask==((1<<a)|(1<<(a+3))))return{type:'door',a,name:'Дверь'};
  if(mask==63)return{type:'arch',fil:[[0,1,'tl'],[2,1,'tr']],name:'Арка'};
  if(mask==54)return{type:'arch',fil:[[1,1,'tl']],name:'Полуарка'};
@@ -466,11 +483,11 @@ function finalize(p){const parts=[],{i,j,l}=p;p.pat=null;
   p.rects=parts.filter(x=>!x.nocol).map(x=>rr(x.c));if(p.xr&&DIAG[p.mask])p.rects.push(...p.xr);p.xr=null}
  const cc=p.t=='w'?(p.ax==0?[(p.i+.5)*S,(p.l+.5)*H,p.j*S]:[p.i*S,(p.l+.5)*H,(p.j+.5)*S]):[(p.i+.5)*S,(p.l+.5)*H,(p.j+.5)*S];
  p.cen=cc;p.r2=4*S*S}
-const animating=new Set();
+const animating=new Set(),building=new Set(),frags=[];
 function applyAction(a){const r_=applyAction0(a);try{const p=a.p||pieces.get(a.k)||(a.k&&{t:a.k[0],i:+a.k.slice(1).split(',')[0],j:+a.k.split(',')[1],l:+a.k.split(',')[2]});if(p&&p.t=='f')refreshCone(p.i,p.j,p.l)}catch(e){}return r_}
 function applyAction0(a){
  if(a.type=='build'){const k=keyOf(a.p);if(pieces.has(k)||a.p.l<0)return false;const p=Object.assign({mask:0},a.p);
-  p.maxhp=MATS[p.mat].hp;p.hp=p.maxhp;finalize(p);pieces.set(k,p);dirty=true;liftT=.15;SFX.play('place',p.cen,.7);return true}
+  p.maxhp=MATS[p.mat].hp;p.hp=p.maxhp*.1;p.bt=0;building.add(p);finalize(p);pieces.set(k,p);dirty=true;liftT=.15;SFX.play('place',p.cen,.7);return true}
  if(a.type=='damage'){const p=pieces.get(a.k);if(!p)return false;p.hp-=a.dmg;dirty=true;
   if(p.hp<=0){pieces.delete(a.k);if(editP===p)editP=null;burst(p.cen,MATS[p.mat].c,16,5);SFX.play('breakP',p.cen);collapseCheck();return 'destroyed'}return true}
  if(a.type=='edit'){const p=pieces.get(a.k);if(!p)return false;liftT=.15;SFX.play('edit',p.cen,.6);if(p.t=='r'){p.d=a.d;p.hs=a.hs==null?-1:a.hs}else if(p.t=='k')p.mask=a.mask;else{p.mask=a.mask;p.open=false;p.anim=0}finalize(p);dirty=true;return true}
@@ -490,15 +507,16 @@ let statN=0,treeN=0;
 function uvFn(p){const{i,j,l}=p;if(p.t=='w')return p.ax==0?v=>[(v[0]-i*S)/S,(v[1]-l*H)/H]:v=>[(v[2]-j*S)/S,(v[1]-l*H)/H];
  if(p.t=='f')return v=>[(v[0]-i*S)/S,(v[2]-j*S)/S];return null}
 let glassN=0;B.glass=gl.createBuffer();
-function rebuild(){const a=[],g=[];for(const p of pieces.values()){if(p===editP)continue;const k=.55+.45*p.hp/p.maxhp,base=MATS[p.mat].c,uf=uvFn(p);
-  for(const pt of p.parts){const col=(pt.col||base.map(x=>x*pt.k)).map(x=>x*k);addHexUV(a,pt.c,col,pt.k==1?uf:null)}
-  for(const c of p.glass)addHex(g,c,[.6,.85,1])}
- gl.bindBuffer(gl.ARRAY_BUFFER,B.stat);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(a),gl.STATIC_DRAW);statN=a.length/11;
+const SB=[gl.createBuffer(),gl.createBuffer(),gl.createBuffer()],SN=[0,0,0];
+function pieceGeo(arr,p,kk){const k=kk==null?.55+.45*p.hp/p.maxhp:kk,base=MATS[p.mat].c,uf=uvFn(p);
+ for(const pt of p.parts){const col=(pt.col||base.map(x=>x*pt.k)).map(x=>x*k);addHexUV(arr,pt.c,col,pt.k==1?uf:null)}}
+function rebuild(){const A=[[],[],[]],g=[];for(const p of pieces.values()){if(p===editP||building.has(p))continue;pieceGeo(A[p.mat],p);for(const c of p.glass)addHex(g,c,[.6,.85,1])}
+ for(let m=0;m<3;m++){gl.bindBuffer(gl.ARRAY_BUFFER,SB[m]);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(A[m]),gl.STATIC_DRAW);SN[m]=A[m].length/11}statN=SN[0]+SN[1]+SN[2];
  gl.bindBuffer(gl.ARRAY_BUFFER,B.glass);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(g.length?g:[0,0,0,0,1,0,0,0,0,0,0]),gl.STATIC_DRAW);glassN=g.length/11;dirty=false}
 function bindAttrs(b){gl.bindBuffer(gl.ARRAY_BUFFER,b);const st=44;
  for(const[k,o,n]of[['p',0,3],['n',12,3],['c',24,3],['uv',36,2]]){gl.enableVertexAttribArray(PA[k]);gl.vertexAttribPointer(PA[k],n,gl.FLOAT,false,st,o)}}
-function draw(buf,n,alpha,grid){if(!n)return;gl.uniform1f(PU.a,alpha);gl.uniform1f(PU.grid,grid?1:0);bindAttrs(buf);gl.drawArrays(gl.TRIANGLES,0,n)}
-function drawArr(arr,alpha){if(!arr.length)return;gl.bindBuffer(gl.ARRAY_BUFFER,B.dyn);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(arr),gl.DYNAMIC_DRAW);draw(B.dyn,arr.length/11,alpha,false)}
+function draw(buf,n,alpha,grid,mt){if(!n)return;gl.uniform1f(PU.a,alpha);gl.uniform1f(PU.mt,mt||0);gl.uniform1f(PU.grid,grid?1:0);bindAttrs(buf);gl.drawArrays(gl.TRIANGLES,0,n)}
+function drawArr(arr,alpha,mt){if(!arr.length)return;gl.bindBuffer(gl.ARRAY_BUFFER,B.dyn);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(arr),gl.DYNAMIC_DRAW);draw(B.dyn,arr.length/11,alpha,false,mt)}
 
 // ================= Манекены и эффекты =================
 const dummies=[[-10,30],[2,34],[14,30]].map(([x,z])=>({x,z,hp:100,sh:100,dead:0,flash:0,el:null}));
@@ -506,6 +524,18 @@ const dynEl=document.getElementById('dyn');
 for(const d of dummies){d.el=document.createElement('div');d.el.className='db';d.el.innerHTML='<div class="bar s"><i></i></div><div class="bar h"><i></i></div>';dynEl.appendChild(d.el)}
 const dBoxes=d=>[[d.x-.45,0,d.z-.3,d.x+.45,1.65,d.z+.3],[d.x-.25,1.65,d.z-.25,d.x+.25,2.15,d.z+.25]];
 const parts=[],nums=[];
+// частица сборки: доска / камешек / пластина летит к постройке
+function spawnFrag(p){if(frags.length>300||!p.boxes.length)return;const c=p.boxes[Math.floor(Math.random()*p.boxes.length)],r=[Math.random(),Math.random(),Math.random()];
+ const lp=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t),b=lp(lp(lp(c[0],c[1],r[0]),lp(c[3],c[2],r[0]),r[2]),lp(lp(c[4],c[5],r[0]),lp(c[7],c[6],r[0]),r[2]),r[1]);
+ const n=p.t=='w'?(p.ax==0?[0,0,1]:[1,0,0]):[0,1,0],sd=Math.random()<.5?-1:1,dd=1.3+Math.random()*.9;
+ const a=[b[0]+n[0]*sd*dd+(Math.random()-.5)*.8,b[1]+(n[1]?dd*.6:0)+.6+Math.random()*.8,b[2]+n[2]*sd*dd+(Math.random()-.5)*.8];
+ const m=p.mat,v=.8+Math.random()*.35,X=p.t=='w'&&p.ax==1;let hs;
+ if(m==0)hs=p.t=='w'?(X?[.05,.11,.6]:[.6,.11,.05]):(Math.random()<.5?[.6,.05,.12]:[.12,.05,.6]);
+ else if(m==1){const z=.08+Math.random()*.09;hs=[z*(.8+Math.random()*.5),z*(.7+Math.random()*.4),z*(.8+Math.random()*.5)]}
+ else hs=p.t=='w'?(X?[.03,.33,.33]:[.33,.33,.03]):[.33,.03,.33];
+ frags.push({a,b,t:0,d:.3+Math.random()*.15,hs,col:MATS[m].c.map(x=>x*v),m})}
+function fragGeo(out){for(const f of frags){const k=Math.min(1,f.t/f.d),e=1-(1-k)*(1-k),p=f.a.map((x,i)=>x+(f.b[i]-x)*e);p[1]+=Math.sin(k*Math.PI)*.5;
+  const sc=k>.85?(1-k)/.15*.6+.4:1,h=f.hs.map(x=>x*sc);addHex(out,boxC(p[0]-h[0],p[1]-h[1],p[2]-h[2],p[0]+h[0],p[1]+h[1],p[2]+h[2]),f.col)}}
 function burst(p,col,n,sp){for(let k=0;k<n&&parts.length<400;k++)parts.push({p:[...p],v:[(Math.random()-.5)*sp,Math.random()*sp,(Math.random()-.5)*sp],t:.6+Math.random()*.4,col})}
 function dmgNum(wp,val,cls){const el=document.createElement('div');el.className='dn '+(cls||'');el.textContent=val;dynEl.appendChild(el);nums.push({el,wp:[...wp],t:0})}
 let hitT=0;
@@ -608,7 +638,7 @@ function fire(){const w=W[slot];const AR=CFN.silentRay(aimRay()),o=AR.o,f=AR.d,r
  for(let k=0;k<w.pellets;k++){const a=Math.random()*6.283,s=Math.sqrt(Math.random())*w.spread*CFN.spread()*(me.cr?.6:me.spr?1.6:1);
   const d=norm([f[0]+(r[0]*Math.cos(a)+u[0]*Math.sin(a))*s,f[1]+(r[1]*Math.cos(a)+u[1]*Math.sin(a))*s,f[2]+(r[2]*Math.cos(a)+u[2]*Math.sin(a))*s]);
   const h=raycast(o,d,w.melee?w.range:w.range);if(!w.melee)shotEnds.push(h?h.pt:[o[0]+d[0]*Math.min(w.range,90),o[1]+d[1]*Math.min(w.range,90),o[2]+d[2]*Math.min(w.range,90)]);if(!h)continue;
-  if(h.kind=='piece'){burst(h.pt,MATS[h.p.mat].c,3,3);if(!sndHit){sndHit=1;SFX.play(['hitWood','hitStone','hitMetal'][h.p.mat],h.pt,.7)}dispatch({type:'damage',k:h.k,dmg:w.dmg});}
+  if(h.kind=='piece'){burst(h.pt,MATS[h.p.mat].c,3,3);if(!sndHit){sndHit=1;SFX.play(['hitWood','hitStone','hitMetal'][h.p.mat],h.pt,.7)}dispatch({type:'damage',k:h.k,dmg:w.bdmg||w.dmg});}
   else if(h.kind=='player'){const dm=w.dmg*(h.head?w.head:1);pDmg+=dm;pHead=pHead||h.head;dmgNum(h.pt,Math.round(dm),h.head?'hd':(rp.sh>0?'sh':''));burst(h.pt,[.9,.2,.2],3,3)}
   else damageDummy(h.dm,w.dmg*(h.head?w.head:1),h.head,h.pt)}
  if(pDmg>0){Net.msg({t:'hit',dmg:pDmg,head:pHead,w:w.name});hitMarker(pHead)}
@@ -808,7 +838,7 @@ function render(dt){
  gl.depthMask(false);gl.drawArrays(gl.TRIANGLES,0,3);gl.depthMask(true);gl.disableVertexAttribArray(SA);
  // мир
  gl.useProgram(P);const M=mul(persp(fy,asp,.1,900),look(e,f,[0,1,0]));gl.uniformMatrix4fv(PU.m,false,M);gl.uniform3fv(PU.cam,e);
- draw(B.ground,6,1,true);draw(B.trees,treeN,1,false);if(dirty)rebuild();draw(B.stat,statN,1,false);
+ draw(B.ground,6,1,true);draw(B.trees,treeN,1,false);if(dirty)rebuild();for(let m=0;m<3;m++)draw(SB[m],SN[m],1,false,m+1);
  const dyn=[];for(const dm of dummies){if(dm.dead>0||Net.online)continue;const c=dm.flash>0?[1,1,1]:[.98,.55,.22];const bx=dBoxes(dm);addHex(dyn,boxC(...bx[0]),c);addHex(dyn,boxC(...bx[1]),dm.flash>0?[1,1,1]:[.98,.85,.65]);
   addHex(dyn,boxC(dm.x-.6,0,dm.z-.6,dm.x+.6,.15,dm.z+.6),[.3,.3,.35])}
  for(const p of parts){const s=.09;addHex(dyn,boxC(p.p[0]-s,p.p[1]-s,p.p[2]-s,p.p[0]+s,p.p[1]+s,p.p[2]+s),p.col)}
@@ -818,6 +848,8 @@ function render(dt){
  CFN.chams(M);
  if(tracers.length){const tr=[];for(const t of tracers)addHex(tr,beamC(t.a,t.b,.025),t.col||[1,.92,.55]);drawArr(tr,.85)}
  gl.depthMask(false);draw(B.glass,glassN,.32,false);gl.depthMask(true);
+ if(frags.length){const fg=[];fragGeo(fg);drawArr(fg,1)}
+ if(building.size){gl.depthMask(false);for(const p of building){if(p===editP)continue;const ga=[];pieceGeo(ga,p,1);const sh=.5+.5*Math.sin(time*14);drawArr(ga,.22+.5*p.bt+.06*sh,p.mat+1)}gl.depthMask(true)}
  // призрак постройки / редакт
  gl.depthMask(false);
  if(mode=='play'&&editP){const p=editP,n=gridN(p),keep=[],sel=[],hov=[],prev=[];
@@ -851,6 +883,9 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;time+=dt;fps
  if(mode=='play')update(dt);
  for(const p of animating){const tg=p.open?1:0;p.anim=p.anim||0;p.anim+=Math.sign(tg-p.anim)*Math.min(Math.abs(tg-p.anim),dt*4);finalize(p);dirty=true;if(p.anim===tg)animating.delete(p)}
  netTick(dt);for(let k=tracers.length-1;k>=0;k--){tracers[k].t-=dt;if(tracers[k].t<=0)tracers.splice(k,1)}
+ for(const p of building){if(pieces.get(keyOf(p))!==p){building.delete(p);continue}const T=MATS[p.mat].bt;p.bt=Math.min(1,p.bt+dt/T);p.hp=Math.min(p.maxhp,p.hp+p.maxhp*.9*dt/T);
+  p.spawnT=(p.spawnT||0)-dt;while(p.spawnT<=0){p.spawnT+=.05;spawnFrag(p)}if(p.bt>=1){building.delete(p);dirty=true}}
+ for(let k=frags.length-1;k>=0;k--){frags[k].t+=dt;if(frags[k].t>=frags[k].d)frags.splice(k,1)}
  hitT-=dt;for(const dm of dummies){dm.flash-=dt;if(dm.dead>0){dm.dead-=dt;if(dm.dead<=0){dm.hp=100;dm.sh=100}}}
  for(let k=parts.length-1;k>=0;k--){const p=parts[k];p.t-=dt;p.v[1]-=20*dt;for(let a=0;a<3;a++)p.p[a]+=p.v[a]*dt;if(p.p[1]<.05){p.p[1]=.05;p.v[1]*=-.3}if(p.t<=0)parts.splice(k,1)}
  const M=render(dt);hud(M,dt);requestAnimationFrame(frame)}
@@ -998,6 +1033,6 @@ const CFN=(()=>{
    const cy_=Math.cos(me.yaw),sy_=Math.sin(me.yaw);for(const t of T){const dx=t.x-me.x,dz=t.z-me.z,fw=dx*sy_+dz*cy_,rt=-(dx*cy_-dz*sy_);let px=rt*sc,py=-fw*sc;const m=Math.hypot(px,py);if(m>R0-4){px*=(R0-4)/m;py*=(R0-4)/m}
     g2.fillStyle=t.kind=='player'?cfg.hidCol:'#ffb000';g2.beginPath();g2.arc(cx+px,cy+py,4,0,7);g2.fill()}}};
  return C})();
-window.__fb={CFN,bodyHit,connKeys,SFX,canPlace,collapseCheck,coneHt,Net,rp,netHandle,startMatch,tracers,get myState(){return myState()},get camInfo(){return camInfo},aimRay,computeCam,charGeo,get pend(){return[pendX,pendY]},rampFromPath,finalize,me,pieces,dispatch,update,codeDown,codeUp,held,get settings(){return settings},setSlot,setMode,raycast,startEdit,confirmEdit,get editP(){return editP},set editMask(v){editMask=v},dummies,fire,W,ammo,get mode(){return mode},target};
+window.__fb={building,frags,CFN,bodyHit,connKeys,SFX,canPlace,collapseCheck,coneHt,Net,rp,netHandle,startMatch,tracers,get myState(){return myState()},get camInfo(){return camInfo},aimRay,computeCam,charGeo,get pend(){return[pendX,pendY]},rampFromPath,finalize,me,pieces,dispatch,update,codeDown,codeUp,held,get settings(){return settings},setSlot,setMode,raycast,startEdit,confirmEdit,get editP(){return editP},set editMask(v){editMask=v},dummies,fire,W,ammo,get mode(){return mode},target};
 requestAnimationFrame(frame);
 </script></body></html>
