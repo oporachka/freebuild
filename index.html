@@ -87,7 +87,7 @@ h2{margin:0 0 6px}
  <button class="btn primary" id="bSolo">Одиночная игра <span>▶</span></button>
  <button class="btn" id="bOnline">Онлайн 1 на 1 <span>⚔</span></button>
  <button class="btn" id="bSet1">Настройки <span>⚙</span></button>
- <div class="ver">v1.6 · прочность, материалы и исправления построек</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
+ <div class="ver">v1.7 · конус и выстрелы у стен</div><p class="sub" id="menuMsg" style="color:#ffb07a"></p>
 </div></div>
 
 <div class="screen hide" id="online"><div class="panel">
@@ -221,7 +221,7 @@ function collapseCheck(){const m=edgeMap(),seen=new Set(),q=[];for(const[k,p]of 
 // ================= Онлайн 1 на 1 (WebRTC через PeerJS) =================
 // Все изменения мира идут через dispatch(action) и пересылаются сопернику.
 // Попадания считает стрелок, урон применяет тот, в кого попали.
-const NET_VER=16,ROOM_PREFIX='frbld-v16-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
+const NET_VER=17,ROOM_PREFIX='frbld-v17-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
 const Net={online:false,host:false,me:'local',conn:null,peer:null,score:{me:0,op:0},ping:0,sendT:0,pingT:0,
  send(a){this.msg({t:'act',a})},
  msg(o){try{if(this.conn&&this.conn.open)this.conn.send(o)}catch(e){}},
@@ -407,13 +407,13 @@ const CSL={12:0,10:1,3:2,5:3};
 const PK={1:[0,0],2:[1,0],4:[0,1],8:[1,1]};const pkT=(m,u,v)=>{const c=PK[m];return Math.min(c[0]?u:1-u,c[1]?v:1-v)};
 function coneParts(i,j,l,mask){if(mask in CSL)return[rampCorners(i,j,l,CSL[mask])];
  if(mask in PK){const c=PK[mask],a=[c[0],c[1]],b=[1-c[0],c[1]],d=[c[0],1-c[1]],e=[1-c[0],1-c[1]];
-  const P=(q,dy)=>[(i+q[0])*S,l*H+.1+pkT(mask,q[0],q[1])*H+dy,(j+q[1])*S];
-  return [[a,b,e,e],[a,e,d,d]].map(Q=>[...Q.map(q=>P(q,-.25)),...Q.map(q=>P(q,0))])}const x0=i*S,z0=j*S,yb=l*H+.02,pk=H/2,hh=coneH(mask),out=[],xc=x0+S/2,zc=z0+S/2;
+  const P=(q,dy)=>[(i+q[0])*S,l*H+.1+pkT(mask,q[0],q[1])*H/2+dy,(j+q[1])*S];
+  return [[a,b,e,e],[a,e,d,d]].map(Q=>[...Q.map(q=>P(q,-.25)),...Q.map(q=>P(q,0))])}const x0=i*S,z0=j*S,yb=l*H+.1,pk=H/2,hh=coneH(mask),out=[],xc=x0+S/2,zc=z0+S/2;
  for(let k=0;k<4;k++){const a=CC[k],b=CC[(k+1)%4],ha=yb+hh[k]*pk,hb=yb+hh[(k+1)%4]*pk,hc=yb+pk,ax=x0+a[0]*S,az=z0+a[1]*S,bx=x0+b[0]*S,bz=z0+b[1]*S;
   out.push([[ax,ha-.25,az],[bx,hb-.25,bz],[xc,hc-.25,zc],[xc,hc-.25,zc],[ax,ha,az],[bx,hb,bz],[xc,hc,zc],[xc,hc,zc]])}return out}
-function coneHt(mask,u,v){if(mask in CSL)return rampT(CSL[mask],u,v)*2;if(mask in PK)return pkT(mask,u,v)*2+.16/H;const hh=coneH(mask),dx=u-.5,dz=v-.5;let k;if(Math.abs(dz)>=Math.abs(dx))k=dz<0?0:2;else k=dx>0?1:3;
+function coneHt(mask,u,v){if(mask in CSL)return rampT(CSL[mask],u,v)*2;if(mask in PK)return pkT(mask,u,v)+.16/H;const hh=coneH(mask),dx=u-.5,dz=v-.5;let k;if(Math.abs(dz)>=Math.abs(dx))k=dz<0?0:2;else k=dx>0?1:3;
  const a=CC[k],b=CC[(k+1)%4],det=(b[1]-.5)*(a[0]-.5)+(.5-b[0])*(a[1]-.5);
- const la=((b[1]-.5)*dx+(.5-b[0])*dz)/det,lb=((.5-a[1])*dx+(a[0]-.5)*dz)/det;return la*hh[k]+lb*hh[(k+1)%4]+(1-la-lb)}
+ const la=((b[1]-.5)*dx+(.5-b[0])*dz)/det,lb=((.5-a[1])*dx+(a[0]-.5)*dz)/det;return la*hh[k]+lb*hh[(k+1)%4]+(1-la-lb)+.16/H}
 // распознавание редакта (как в Fortnite)
 // разрешённые редакты (как в Fortnite, вместе с зеркальными)
 const OK_EDITS={w:new Set([8,16,32,40,9,18,36,63,27,54,448,504,11,38,416,200]),f:new Set([1,2,4,8,3,12,5,10,7,11,13,14])};
@@ -644,17 +644,21 @@ function damageDummy(dm,dmg,head,pt){let rest=dmg;dm.flash=.1;if(dm.sh>0){const 
  dm.hp-=rest;if(dm.hp<=0){dm.dead=3;burst([dm.x,1,dm.z],[1,.55,.2],20,6)}hitMarker(head)}
 
 // ================= Оружие =================
-function fire(){const w=W[slot];const AR=CFN.silentRay(aimRay()),o=AR.o,f=AR.d,r=norm(cross(f,[0,1,0])),u=cross(r,f);
+// Прицел выбирает точку, но пуля всегда проходит от игрока: камера не может стрелять сквозь укрытие.
+function shotRay(w){const ar=CFN.silentRay(aimRay()),h=raycast(ar.o,ar.d,w.range||250),t=h?Math.min(w.range||250,h.t+.2):(w.range||250),target=ar.o.map((v,i)=>v+ar.d[i]*t),o=[me.x,me.y+EYE-.55*(me.crT||0),me.z],v=sub(target,o);
+ return{o,d:Math.hypot(...v)>1e-5?norm(v):ar.d}}
+function fire(){const w=W[slot];const AR=shotRay(w),o=AR.o,f=AR.d,r=norm(cross(f,[0,1,0])),u=cross(r,f);
  if(!w.melee){if(reloadT>0)return;if(ammo[slot]<=0){startReload();return}ammo[slot]--}
- const shotEnds=[];let pDmg=0,pHead=false,sndHit=0;
+ const shotEnds=[],pieceHits=[];let pDmg=0,pHead=false,sndHit=0;
  for(let k=0;k<w.pellets;k++){const a=Math.random()*6.283,s=Math.sqrt(Math.random())*w.spread*CFN.spread()*(me.cr?.6:me.spr?1.6:1);
   const d=norm([f[0]+(r[0]*Math.cos(a)+u[0]*Math.sin(a))*s,f[1]+(r[1]*Math.cos(a)+u[1]*Math.sin(a))*s,f[2]+(r[2]*Math.cos(a)+u[2]*Math.sin(a))*s]);
   const h=raycast(o,d,w.melee?w.range:w.range);if(!w.melee)shotEnds.push(h?h.pt:[o[0]+d[0]*Math.min(w.range,90),o[1]+d[1]*Math.min(w.range,90),o[2]+d[2]*Math.min(w.range,90)]);if(!h)continue;
-  if(h.kind=='piece'){burst(h.pt,MATS[h.p.mat].c,3,3);if(!sndHit){sndHit=1;SFX.play(['hitWood','hitStone','hitMetal'][h.p.mat],h.pt,.7)}dispatch({type:'damage',k:h.k,dmg:w.bdmg||w.dmg});}
+  if(h.kind=='piece'){burst(h.pt,MATS[h.p.mat].c,3,3);if(!sndHit){sndHit=1;SFX.play(['hitWood','hitStone','hitMetal'][h.p.mat],h.pt,.7)}pieceHits.push({type:'damage',k:h.k,dmg:w.bdmg||w.dmg});}
   else if(h.kind=='player'){const dm=w.dmg*(h.head?w.head:1);pDmg+=dm;pHead=pHead||h.head;dmgNum(h.pt,Math.round(dm),h.head?'hd':(rp.sh>0?'sh':''));burst(h.pt,[.9,.2,.2],3,3)}
   else damageDummy(h.dm,w.dmg*(h.head?w.head:1),h.head,h.pt)}
+ for(const a of pieceHits)dispatch(a);
  if(pDmg>0){Net.msg({t:'hit',dmg:pDmg,head:pHead,w:w.name});hitMarker(pHead)}
- if(shotEnds.length){const ha=handPos();for(const b of shotEnds)tracers.push({a:ha,b,t:.07});Net.msg({t:'shot',s:slot,a:ha,b:shotEnds.map(p=>p.map(x=>Math.round(x*100)/100))})}
+ if(shotEnds.length){const ha=o;for(const b of shotEnds)tracers.push({a:ha,b,t:.07});Net.msg({t:'shot',s:slot,a:ha,b:shotEnds.map(p=>p.map(x=>Math.round(x*100)/100))})}
  SFX.play(w.melee?'swing':slot);vmKick=1;me.pitch=Math.min(1.5,me.pitch+w.kick*(.6+Math.random()*.4));if(w.melee)swing=1;
  cd=1/w.rate;if(!w.melee&&ammo[slot]<=0)startReload()}
 function startReload(){if((slot=='ar'||slot=='sg')&&reloadT<=0&&ammo[slot]<W[slot].mag){reloadT=W[slot].reload;SFX.play('reload',null,.7)}}
@@ -1047,6 +1051,6 @@ const CFN=(()=>{
    const cy_=Math.cos(me.yaw),sy_=Math.sin(me.yaw);for(const t of T){const dx=t.x-me.x,dz=t.z-me.z,fw=dx*sy_+dz*cy_,rt=-(dx*cy_-dz*sy_);let px=rt*sc,py=-fw*sc;const m=Math.hypot(px,py);if(m>R0-4){px*=(R0-4)/m;py*=(R0-4)/m}
     g2.fillStyle=t.kind=='player'?cfg.hidCol:'#ffb000';g2.beginPath();g2.arc(cx+px,cy+py,4,0,7);g2.fill()}}};
  return C})();
-window.__fb={building,frags,CFN,bodyHit,bodyPen,supportAt,ceilingAt,coneParts,tickBuildings,MATS,materialBands,connKeys,SFX,canPlace,collapseCheck,coneHt,Net,rp,netHandle,startMatch,tracers,get myState(){return myState()},get camInfo(){return camInfo},aimRay,computeCam,charGeo,get pend(){return[pendX,pendY]},rampFromPath,finalize,me,pieces,dispatch,update,codeDown,codeUp,held,get settings(){return settings},setSlot,setMode,raycast,startEdit,confirmEdit,get editP(){return editP},set editMask(v){editMask=v},dummies,fire,W,ammo,get mode(){return mode},target};
+window.__fb={shotRay,building,frags,CFN,bodyHit,bodyPen,supportAt,ceilingAt,coneParts,tickBuildings,MATS,materialBands,connKeys,SFX,canPlace,collapseCheck,coneHt,Net,rp,netHandle,startMatch,tracers,get myState(){return myState()},get camInfo(){return camInfo},aimRay,computeCam,charGeo,get pend(){return[pendX,pendY]},rampFromPath,finalize,me,pieces,dispatch,update,codeDown,codeUp,held,get settings(){return settings},setSlot,setMode,raycast,startEdit,confirmEdit,get editP(){return editP},set editMask(v){editMask=v},dummies,fire,W,ammo,get mode(){return mode},target};
 requestAnimationFrame(frame);
 </script></body></html>
