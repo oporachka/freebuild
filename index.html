@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Йосыпнайт 4.1</title><meta name="application-name" content="Йосыпнайт"><meta name="version" content="4.1">
+<title>Йосыпнайт 4.1a</title><meta name="application-name" content="Йосыпнайт"><meta name="version" content="4.1a">
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#24162e;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;user-select:none;color:#fff}
 canvas{display:block;width:100%;height:100%}
@@ -397,7 +397,7 @@ body.touch-playing #touchControls{display:block}
  <div class="lobby-modes"><button class="btn lobby-mode online-mode" id="bOnline"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="m11 5 29 29-6 6L5 11V5h6ZM37 5 26 16m-8 10L7 37m21-4 12 12M33 28l12 12M5 35l8 8"/></svg><span><b>В БОЙ / ОНЛАЙН</b><small id="lobbyRankedLabel">Рейтинг 1×1 и комнаты с друзьями</small></span><i>↗</i></button>
  <button class="btn lobby-mode solo-mode" id="bSolo"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 10h36v29H6zM6 24h36M18 10v14m12 0v15M6 39v4m36-4v4"/></svg><span><b>ФРИБИЛД <em>(ОДИНОЧНАЯ)</em></b><small>Строй, редактируй, тренируйся без лимитов</small></span><i>↗</i></button></div>
  <p class="lobby-note">Бесконечные материалы. Полная свобода.</p><p id="menuMsg" role="status"></p>
- <aside class="lobby-news"><span>ОБНОВЛЕНИЕ v4.1</span><strong>Твой рейтинг.<br>Твоя победа.</strong><small>ПТС · подбор соперника · дуэли 1×1 до 5 побед.</small></aside></main>
+ <aside class="lobby-news"><span>ОБНОВЛЕНИЕ v4.1a</span><strong>Твой рейтинг.<br>Твоя победа.</strong><small>Исправлен проход сквозь стены снизу · дуэли до 5 побед.</small></aside></main>
  <div class="lobby-scene-label"><span>FREEBUILD / CREATIVE</span><b>Следующая победа<br>начинается с тебя.</b></div><footer class="lobby-footer">WASD — движение <span>·</span> B — эмоции <span>·</span> N — колесо чата</footer>
 </div>
 
@@ -411,7 +411,7 @@ body.touch-playing #touchControls{display:block}
  <footer class="locker-actions"><button class="btn" id="lockerBack">СОХРАНИТЬ И ВЕРНУТЬСЯ <span>↗</span></button><p>Изменения сохраняются автоматически.<br>Хитбокс не меняется.</p></footer>
 </div></div>
 <div class="screen hide" id="shop"><div class="shop-hud">
- <header class="locker-heading"><div class="shop-top"><div><span>КОСМЕТИКА · СЕЗОН 4</span><h1>МАГАЗИН</h1></div><div class="shop-timer">ВЕРСИЯ 4.1</div></div><p>ПРИМЕРЯЙ НА ПЕРСОНАЖЕ СПРАВА · ПОКУПКИ СОХРАНЯЮТСЯ В ШКАФЧИКЕ</p></header>
+ <header class="locker-heading"><div class="shop-top"><div><span>КОСМЕТИКА · СЕЗОН 4</span><h1>МАГАЗИН</h1></div><div class="shop-timer">ВЕРСИЯ 4.1a</div></div><p>ПРИМЕРЯЙ НА ПЕРСОНАЖЕ СПРАВА · ПОКУПКИ СОХРАНЯЮТСЯ В ШКАФЧИКЕ</p></header>
  <div class="tabs" role="tablist" aria-label="Категории магазина">
   <button type="button" class="tab on" data-shop-tab="all">ВСЕ</button>
   <button type="button" class="tab" data-shop-tab="bundle">НАБОРЫ</button>
@@ -458,7 +458,7 @@ body.touch-playing #touchControls{display:block}
 <dialog id="accountDialog" aria-labelledby="accountTitle" aria-describedby="accountDescription">
  <button id="accountClose" class="close" type="button" aria-label="Закрыть окно аккаунта"><svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
  <header class="account-heading">
-  <span class="eyebrow">ЙОСЫПНАЙТ · 4.1</span><h2 id="accountTitle">ТВОЙ АККАУНТ</h2>
+  <span class="eyebrow">ЙОСЫПНАЙТ · 4.1a</span><h2 id="accountTitle">ТВОЙ АККАУНТ</h2>
   <p id="accountDescription" class="account-description"><span class="account-devices" aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" focusable="false"><rect x="2" y="3" width="20" height="14" rx="1.5"/><path d="M8 21h8m-4-4v4"/></svg><svg class="account-icon" viewBox="0 0 16 24" focusable="false"><rect x="2" y="2" width="12" height="20" rx="2"/><path d="M7 18h2"/></svg></span><span>Один шкафчик и баланс<br>на ПК и телефоне</span></p>
  </header>
  <div id="accountFormSection">
@@ -945,7 +945,11 @@ function bodyHit(x,z,y){return bodyPen(x,z,y)>0}
 function ceilingAt(x,z,y0,y1){const i=Math.floor(x/S),j=Math.floor(z/S),u=x/S-i,v=z/S-j,bit=Math.floor(u*2)+Math.floor(v*2)*2;let best=Infinity;
  for(let l=Math.max(0,Math.floor(y0/H));l<=Math.floor(y1/H)+1;l++){let p=pieces.get('f'+i+','+j+','+l);if(p&&!(p.mask>>bit&1)){const b=l*H-.15;if(b>y0-.01&&b<y1&&b<best)best=b}
   p=pieces.get('r'+i+','+j+','+l);if(p&&rampIn(p,u,v)){const b=l*H+rampT(p.d,u,v)*H-.15;if(b>y0-.01&&b<y1&&b<best)best=b}
-  p=pieces.get('k'+i+','+j+','+l);if(p&&!kHole(p,u,v)){const b=l*H+.02+coneHt(p.mask||0,u,v)*H/2-.25;if(b>y0-.01&&b<y1&&b<best)best=b}}return best}
+   p=pieces.get('k'+i+','+j+','+l);if(p&&!kHole(p,u,v)){const b=l*H+.02+coneHt(p.mask||0,u,v)*H/2-.25;if(b>y0-.01&&b<y1&&b<best)best=b}}
+ // Нижние грани стен и редактов также останавливают голову при подъёме.
+ for(const p of wallsNear(x,z,y0,y1)){const al=p.ax==0?x:z,ac=p.ax==0?z:x,c0=p.ax==0?p.j*S:p.i*S;if(Math.abs(ac-c0)>=R)continue;
+  for(const r of p.rects)if(al>r[0]-R&&al<r[1]+R&&r[2]>y0-.01&&r[2]<y1&&r[2]<best)best=r[2]}
+ return best}
 function solveWall(p,x,z,px,pz,y){const ax=p.ax;let al=ax==0?x:z,ac=ax==0?z:x;const pal=ax==0?px:pz,pac=ax==0?pz:px,c0=ax==0?p.j*S:p.i*S;
  if(Math.abs(ac-c0)>=R)return[x,z];
  for(const r of p.rects){if(y+HEAD<=r[2]+.01||y>=r[3]-.05)continue;if(al<=r[0]-R||al>=r[1]+R)continue;
@@ -953,10 +957,11 @@ function solveWall(p,x,z,px,pz,y){const ax=p.ax;let al=ax==0?x:z,ac=ax==0?z:x;co
   if(me.onGround&&r[3]-y<.7){const acB=c0+(pac>=c0?-1:1)*.2,g=ax==0?supportAt(al,acB,y,1.1):supportAt(acB,al,y,1.1);if(g.s&&g.h>=r[3]-.15)continue}
   if(Math.abs(pac-c0)<R-1e-6&&(ac-c0)*(pac-c0)>0&&Math.abs(ac-c0)>Math.abs(pac-c0)+1e-8)continue;ac=c0+(pac>=c0?R:-R)}
  return ax==0?[al,ac]:[ac,al]}
-function collideWalls(x,z,px,pz,y){const i0=Math.floor(x/S),j0=Math.floor(z/S);
- for(let l=Math.max(0,Math.floor(y/H)-1);l<=Math.floor((y+HEAD)/H);l++){
-  for(let i=i0-1;i<=i0+1;i++)for(let j=j0-1;j<=j0+2;j++){const p=pieces.get('w'+i+','+j+','+l+',0');if(p)[x,z]=solveWall(p,x,z,px,pz,y)}
-  for(let i=i0-1;i<=i0+2;i++)for(let j=j0-1;j<=j0+1;j++){const p=pieces.get('w'+i+','+j+','+l+',1');if(p)[x,z]=solveWall(p,x,z,px,pz,y)}}
+function* wallsNear(x,z,y0,y1){const i0=Math.floor(x/S),j0=Math.floor(z/S);
+ for(let l=Math.max(0,Math.floor(y0/H)-1);l<=Math.floor(y1/H);l++){
+  for(let i=i0-1;i<=i0+1;i++)for(let j=j0-1;j<=j0+2;j++){const p=pieces.get('w'+i+','+j+','+l+',0');if(p)yield p}
+  for(let i=i0-1;i<=i0+2;i++)for(let j=j0-1;j<=j0+1;j++){const p=pieces.get('w'+i+','+j+','+l+',1');if(p)yield p}}}
+function collideWalls(x,z,px,pz,y){for(const p of wallsNear(x,z,y,y+HEAD))[x,z]=solveWall(p,x,z,px,pz,y);
  return[x,z]}
 const eye=()=>[me.x,me.y+EYE,me.z];
 function computeCam(){const f=fwd();if(!settings.thirdPerson)return{e:eye(),f};
@@ -1710,6 +1715,10 @@ function update(dt){
  const g=supportAt(nx,nz,Math.max(me.y,ny),.7),wasAir=!me.onGround,impact=-me.vy;
  if(ny<=g.h||(me.onGround&&me.vy<=0&&ny-g.h<.9)){ny=g.h;if(wasAir&&impact>8)SFX.play('land',null,Math.min(1,impact/25));if(wasAir&&impact>22)damagePlayer(Math.round((impact-22)*10),'падение с высоты',true);me.vy=0;me.onGround=true;me.sup=g.s}else{me.onGround=false;me.sup=null}
  if(liftT>0){liftT-=dt;const g2=supportAt(nx,nz,ny,HEAD-.2);if(g2.h>ny+.05){ny=g2.h;me.vy=Math.max(0,me.vy);me.onGround=true;me.sup=g2.s}}
+ // Ступенька или новая постройка не должны проталкивать игрока сквозь стену сверху.
+ if(ny>me.y+.001&&ceilingAt(nx,nz,me.y+HEAD,ny+HEAD-.001)<Infinity){
+  nx=me.x;nz=me.z;ny=me.y;me.vy=0;const g0=supportAt(nx,nz,ny,.05);me.onGround=Math.abs(ny-g0.h)<.05;me.sup=me.onGround?g0.s:null;
+ }
  if(Net.ranked){nx=Math.max(-95.8,Math.min(95.8,nx));nz=Math.max(-95.8,Math.min(95.8,nz));}me.x=nx;me.z=nz;me.y=ny;if(mode!='play')return;
  bob+=moving&&me.onGround?dt*(me.spr?13:me.cr?7:10):0;{const sn=Math.floor(bob/Math.PI);if(sn!=stepN){stepN=sn;SFX.play('step',null,.6)}}
  cd-=dt;switchT=Math.max(0,switchT-dt);vmKick=Math.max(0,vmKick-dt*8);swing=Math.max(0,swing-dt*3.5);
