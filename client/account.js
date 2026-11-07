@@ -5,6 +5,9 @@ let sdk, auth, session, rewardQueue = Promise.resolve(), equipTimer, applying = 
 const dialog = byId('accountDialog');
 function message(text) { byId('accountMessage').textContent = text; }
 function show() { bridge.pause(); if (!dialog.open) dialog.showModal(); }
+cloud.open = show;
+cloud.getToken = async () => { const user = cloud.user; if (!cloud.active || !user?.emailVerified) throw new Error('Войди в аккаунт с подтверждённой почтой.'); const token = await user.getIdToken(); if (cloud.user?.uid !== user.uid) throw new Error('Аккаунт изменился. Повтори поиск.'); return token; };
+cloud.refresh = async () => { if (cloud.active) apply(await request('profile')); };
 byId('accountButton').onclick = show;
 byId('accountClose').onclick = () => dialog.close();
 byId('accountGuest').onclick = () => dialog.close();
@@ -33,6 +36,7 @@ function apply(profile) {
   cloud.profile = profile; applying = true; bridge.apply(profile); applying = false;
   byId('accountButton').textContent = 'АККАУНТ ✓';
   byId('accountIdentity').textContent = cloud.user.email || profile.nick;
+  window.YosypRanked?.profile(profile.ranked);
 }
 async function action(fn) {
   const buttons = [...dialog.querySelectorAll('[data-account-action]')]; buttons.forEach(b => b.disabled = true);
@@ -66,6 +70,7 @@ async function signedIn(user) {
   const generation = ++authGeneration;
   clearTimeout(equipTimer);
   cloud.user = user; cloud.active = false; cloud.uid = user?.uid || null; session = null; cloud.profile = null;
+  window.YosypRanked?.accountChanged(cloud.uid);
   byId('accountFormSection').hidden = !!user; byId('accountUserSection').hidden = !user;
   byId('accountGuestHint').hidden = !!user;
   byId('accountVerification').hidden = !user || user.emailVerified;
