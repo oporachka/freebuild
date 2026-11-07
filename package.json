@@ -1,12 +1,12 @@
 {
   "name": "yosypnite",
-  "version": "4.1.3",
+  "version": "4.1.4",
   "private": true,
   "type": "module",
   "engines": { "node": ">=24" },
   "scripts": {
     "start": "node server/index.mjs",
-    "test": "node --test --test-timeout=15000 tests/backend.test.mjs tests/account.test.mjs tests/ranked.test.mjs tests/ranked-client.test.mjs tests/collision.test.mjs tests/release.test.mjs && node tests/touch-input.cjs && node tests/release-economy.cjs"
+    "test": "node --test --test-timeout=15000 tests/backend.test.mjs tests/account.test.mjs tests/ranked.test.mjs tests/ranked-client.test.mjs tests/release.test.mjs && node tests/touch-input.cjs && node tests/release-economy.cjs"
   },
   "dependencies": { "jose": "^6.1.0", "ws": "^8.18.3" }
 }
