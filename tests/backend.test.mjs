@@ -122,8 +122,9 @@ test('the actual browser connection adapter completes the server handshake and r
   await Promise.all([hostReady, guestReady]); assert.equal(hostConnection.open, true);
   guestConnection.send({ t: 'ping', k: 123 }); assert.deepEqual(JSON.parse(JSON.stringify(await data)), { t: 'ping', k: 123 });
 });
-test('all classic inline game scripts compile and archived 4.0 includes its client assets', () => {
-  for (const filename of ['index.html', 'versions/v4.0.html']) {
+test('all classic inline game scripts compile and the current archive includes its client assets', () => {
+  const current = /name="version" content="([^"]+)"/.exec(readFileSync(new URL('../index.html', import.meta.url), 'utf8'))[1];
+  for (const filename of ['index.html', `versions/v${current}.html`]) {
     const html = readFileSync(new URL('../' + filename, import.meta.url), 'utf8');
     for (const match of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)) if (!match[1].includes('module') && match[2].trim()) new vm.Script(match[2], { filename });
     assert.match(html, /NET_VER=40/);

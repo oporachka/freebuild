@@ -7,8 +7,17 @@ function message(text) { byId('accountMessage').textContent = text; }
 function show() { bridge.pause(); if (!dialog.open) dialog.showModal(); }
 byId('accountButton').onclick = show;
 byId('accountClose').onclick = () => dialog.close();
+byId('accountGuest').onclick = () => dialog.close();
+function passwordVisibility(visible) {
+  byId('accountPassword').type = visible ? 'text' : 'password';
+  byId('accountPasswordToggle').setAttribute('aria-pressed', String(visible));
+  byId('accountPasswordToggle').setAttribute('aria-label', visible ? 'Скрыть пароль' : 'Показать пароль');
+}
+function clearPassword() { byId('accountPassword').value = ''; passwordVisibility(false); }
+byId('accountPasswordToggle').onclick = () => passwordVisibility(byId('accountPassword').type === 'password');
+dialog.onclose = clearPassword;
 function errorText(e) {
-  return ({ 'auth/invalid-credential': 'Неверная почта или пароль.', 'auth/email-already-in-use': 'Эта почта уже зарегистрирована. Войди или восстанови пароль.', 'auth/weak-password': 'Используй пароль от 8 символов.', 'auth/invalid-email': 'Проверь адрес почты.', 'auth/popup-blocked': 'Разреши всплывающее окно для входа через Google.', 'auth/popup-closed-by-user': 'Окно входа закрыто.', 'auth/too-many-requests': 'Слишком много попыток. Попробуй позже.', 'auth/network-request-failed': 'Нет связи с сервисом входа.', 'auth/account-exists-with-different-credential': 'Этот адрес уже зарегистрирован другим способом. Сначала войди по почте.' })[e.code] || e.message || 'Не удалось выполнить действие.';
+  return ({ 'auth/invalid-credential': 'Неверная почта или пароль.', 'auth/email-already-in-use': 'Эта почта уже зарегистрирована. Войди или восстанови пароль.', 'auth/weak-password': 'Используй пароль от 6 символов.', 'auth/invalid-email': 'Проверь адрес почты.', 'auth/popup-blocked': 'Разреши всплывающее окно для входа через Google.', 'auth/popup-closed-by-user': 'Окно входа закрыто.', 'auth/too-many-requests': 'Слишком много попыток. Попробуй позже.', 'auth/network-request-failed': 'Нет связи с сервисом входа.', 'auth/account-exists-with-different-credential': 'Этот адрес уже зарегистрирован другим способом. Сначала войди по почте.' })[e.code] || e.message || 'Не удалось выполнить действие.';
 }
 async function request(route, body, retry = true) {
   const user = cloud.user;
@@ -26,22 +35,23 @@ function apply(profile) {
   byId('accountIdentity').textContent = cloud.user.email || profile.nick;
 }
 async function action(fn) {
-  const buttons = [...dialog.querySelectorAll('button:not(.close)')]; buttons.forEach(b => b.disabled = true);
-  try { await fn(); } catch (e) { message(errorText(e)); } finally { buttons.forEach(b => b.disabled = false); }
+  const buttons = [...dialog.querySelectorAll('[data-account-action]')]; buttons.forEach(b => b.disabled = true);
+  dialog.ariaBusy = 'true';
+  try { await fn(); } catch (e) { message(errorText(e)); } finally { buttons.forEach(b => b.disabled = false); dialog.ariaBusy = 'false'; }
 }
 function formValues() { return { email: byId('accountEmail').value.trim(), password: byId('accountPassword').value }; }
-byId('accountForm').onsubmit = event => { event.preventDefault(); action(async () => { if (!auth) throw new Error('Сервис входа ещё загружается.'); const v = formValues(); await sdk.signInWithEmailAndPassword(auth, v.email, v.password); byId('accountPassword').value = ''; }); };
-byId('accountRegister').onclick = () => action(async () => {
+byId('accountForm').onsubmit = event => { event.preventDefault(); action(async () => { if (!auth) throw new Error('Сервис входа ещё загружается.'); const v = formValues(); await sdk.signInWithEmailAndPassword(auth, v.email, v.password); clearPassword(); }); };
+byId('accountRegister').onclick = () => { if (!byId('accountForm').reportValidity()) return; action(async () => {
   if (!auth) throw new Error('Сервис входа ещё загружается.');
-  const v = formValues(); if (v.password.length < 8) throw new Error('Используй пароль от 8 символов.');
+  const v = formValues(); if (v.password.length < 6) throw new Error('Используй пароль от 6 символов.');
   const credential = await sdk.createUserWithEmailAndPassword(auth, v.email, v.password);
-  await sdk.sendEmailVerification(credential.user); byId('accountPassword').value = ''; message('Письмо отправлено. Подтверди почту по ссылке, затем нажми «Я подтвердил почту».');
-});
+  await sdk.sendEmailVerification(credential.user); clearPassword(); message('Письмо отправлено. Подтверди почту по ссылке, затем нажми «Я подтвердил почту».');
+}); };
 byId('accountGoogle').onclick = () => action(async () => { if (!auth) throw new Error('Сервис входа ещё загружается.'); await sdk.signInWithPopup(auth, new sdk.GoogleAuthProvider()); });
-byId('accountReset').onclick = () => action(async () => {
+byId('accountReset').onclick = () => { if (!byId('accountEmail').reportValidity()) return; action(async () => {
   if (!auth) throw new Error('Сервис входа ещё загружается.');
   await sdk.sendPasswordResetEmail(auth, formValues().email); message('Если аккаунт с такой почтой существует, придёт письмо для восстановления.');
-});
+}); };
 byId('accountVerify').onclick = () => action(async () => { await sdk.reload(auth.currentUser); await auth.currentUser.getIdToken(true); await signedIn(auth.currentUser); });
 byId('accountResend').onclick = () => action(async () => { await sdk.sendEmailVerification(auth.currentUser); message('Письмо подтверждения отправлено.'); });
 byId('accountLogout').onclick = () => action(async () => { await sdk.signOut(auth); message('Ты вышел. Локальные сохранения гостя восстановлены.'); });
@@ -57,6 +67,7 @@ async function signedIn(user) {
   clearTimeout(equipTimer);
   cloud.user = user; cloud.active = false; cloud.uid = user?.uid || null; session = null; cloud.profile = null;
   byId('accountFormSection').hidden = !!user; byId('accountUserSection').hidden = !user;
+  byId('accountGuestHint').hidden = !!user;
   byId('accountVerification').hidden = !user || user.emailVerified;
   byId('accountMigration').hidden = true;
   if (!user) {

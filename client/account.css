@@ -1,18 +1,74 @@
 #accountButton{position:static;width:auto;min-width:68px;min-height:38px;padding:8px;border:1px solid #87c7ff77;border-radius:5px;background:#102b48;color:#eef7ff;font:700 10px system-ui;cursor:pointer;white-space:nowrap}
-#accountDialog{width:min(430px,calc(100vw - 40px));max-height:calc(100dvh - 40px);box-sizing:border-box;overflow:auto;padding:28px;border:1px solid #8bb8e255;border-radius:18px;background:linear-gradient(140deg,#132e4f,#0b172b);color:#e9f2ff;box-shadow:0 24px 90px #0009;font:14px/1.5 system-ui}
-#accountDialog::backdrop{background:#020814ba;backdrop-filter:blur(6px)}
-#accountDialog h2{font-size:30px;line-height:1.1;margin:8px 0 12px;font-weight:900;letter-spacing:-1px}
-#accountDialog .eyebrow{font-size:10px;color:#ffc742;font-weight:800;letter-spacing:2px}
-#accountDialog p{color:#b2c9e2;margin:10px 0 18px}#accountDialog label{display:block;font-size:12px;margin:12px 0;color:#c6dbf2}
-#accountDialog input{box-sizing:border-box;width:100%;min-height:46px;margin-top:5px;padding:11px;border:1px solid #7195ba66;border-radius:8px;background:#07192b;color:white;font:16px system-ui;user-select:text}
-#accountDialog button{font-family:inherit;cursor:pointer;min-height:44px;border-radius:8px;border:1px solid #7195ba55;padding:10px 14px;background:#193b60;color:white;font-weight:700}
-#accountDialog button:disabled{opacity:.5;cursor:wait}#accountDialog button:focus-visible,#accountDialog input:focus-visible{outline:3px solid #ffc742;outline-offset:2px}
-#accountDialog .primary{background:#ffc742;color:#17202b;border-color:#ffc742;width:100%}#accountDialog .google{background:#f5f8ff;color:#17202b;width:100%;margin:4px 0 8px}
-#accountDialog .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}#accountDialog .row button{flex:1;font-size:12px}
-#accountDialog .close{position:absolute;right:12px;top:10px;background:none;border:0;font-size:22px;width:44px;padding:0}
-#accountDialog .divider{display:flex;align-items:center;gap:12px;color:#819ab6;font-size:11px;margin:12px 0}#accountDialog .divider:before,#accountDialog .divider:after{content:'';height:1px;flex:1;background:#6a8aab44}
-#accountMessage{min-height:22px;font-size:12px;color:#ffe297!important;white-space:pre-line}#accountDialog .privacy{font-size:11px;color:#91a9c1;margin-bottom:0}#accountDialog a{color:#afdbff}
+#accountDialog{
+  width:min(448px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;
+  overflow:auto;overscroll-behavior:contain;padding:28px 30px 24px;
+  border:1px solid rgba(255,255,255,.12);border-top:3px solid #ffb800;border-radius:8px;
+  background:radial-gradient(ellipse at 100% 0%,#1a3b6259,transparent 55%),linear-gradient(145deg,#132238,#0b1424 70%);
+  color:#f5f8ff;box-shadow:0 24px 90px #000a,0 0 0 1px #ffffff05,inset 0 1px 0 #ffb80033;
+  font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;scrollbar-width:thin;scrollbar-color:#365273 #0b1424;
+}
+#accountDialog::backdrop{background:#020814ba;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#accountDialog .account-heading{margin-bottom:22px}
+#accountDialog .eyebrow{display:block;padding-right:38px;color:#ffb800;font-size:10px;font-weight:800;letter-spacing:2px;line-height:1.5}
+#accountDialog h2{margin:12px 0;font-size:34px;line-height:1.05;font-style:italic;font-weight:900;letter-spacing:-1.3px;text-transform:uppercase;text-shadow:0 3px 0 #050d1b,0 5px 18px #0004}
+#accountDialog p{color:#b8cbe2;margin:12px 0 18px}
+#accountDialog .account-description{display:flex;align-items:center;gap:12px;margin:0;color:#aebfd5;font-size:12px;line-height:1.55}
+#accountDialog .account-devices{position:relative;display:flex;align-items:center;flex:0 0 40px;width:40px;color:#84bfff}
+#accountDialog .account-devices svg:first-child{width:29px;height:29px}
+#accountDialog .account-devices svg:last-child{position:absolute;right:0;bottom:1px;width:16px;height:23px;background:#122137}
+#accountDialog .account-icon{display:block;flex-shrink:0;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#accountDialog button{box-sizing:border-box;min-height:44px;border:1px solid #759bca44;border-radius:4px;padding:10px 14px;background:#193b60;color:#f5f8ff;font-family:inherit;font-size:13px;font-weight:700;line-height:1.3;cursor:pointer;touch-action:manipulation;transition:background .15s,border-color .15s,box-shadow .15s,transform .15s,filter .15s}
+#accountDialog button:disabled{opacity:.65;cursor:wait}
+#accountDialog button:focus-visible,#accountDialog a:focus-visible{outline:2px solid #ffb800;outline-offset:4px}
+#accountDialog .close{position:absolute;right:14px;top:13px;display:grid;place-items:center;width:36px;height:36px;min-height:36px;padding:0;border:1px solid #ffffff12;border-radius:3px;background:rgba(255,255,255,.08);color:#d9e5f5}
+#accountDialog .close .account-icon{width:21px;height:21px;stroke-width:2}
+#accountDialog .google{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:50px;margin:0;background:#fff;color:#0f172a;border:1px solid #fff;border-bottom:4px solid #cbd5e1;box-shadow:0 4px 12px #0003;font-size:14px;font-weight:700}
+#accountDialog .google-mark{flex-shrink:0;width:21px;height:21px}
+#accountDialog .divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:#8b9eb7;font-size:10px;font-weight:700;letter-spacing:1.6px}
+#accountDialog .divider::before,#accountDialog .divider::after{content:"";flex:1;height:1px;background:#ffffff15}
+#accountDialog .account-field{margin-bottom:16px}
+#accountDialog .account-label{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:20px;margin-bottom:7px}
+#accountDialog label{display:block;color:#c5d4e8;font-size:10px;font-weight:800;letter-spacing:1.3px;line-height:1.5}
+#accountDialog .account-field>label{margin-bottom:8px}
+#accountDialog .account-input{position:relative;color:#7893b5}
+#accountDialog .account-input>.account-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;z-index:1}
+#accountDialog input{box-sizing:border-box;width:100%;height:50px;min-width:0;margin:0;padding:12px 14px 12px 45px;border:1px solid #6f8caf55;border-radius:4px;background:#071221;color:#f5f8ff;font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;user-select:text;caret-color:#ffb800;transition:border-color .15s,box-shadow .15s}
+#accountDialog input::placeholder{color:#7f91aa;font-size:13px;opacity:1}
+#accountDialog input:focus{outline:none;border-color:#ffb800;box-shadow:0 0 0 3px #ffb80016,0 0 16px #ffb8000d}
+#accountDialog .account-input:focus-within>.account-icon{color:#ffb800}
+#accountDialog .account-password input{padding-right:50px}
+#accountDialog .password-toggle{position:absolute;right:3px;top:3px;display:grid;place-items:center;width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;color:#9eb4cf}
+#accountDialog .password-toggle .eye-closed,#accountDialog .password-toggle[aria-pressed="true"] .eye-open{display:none}
+#accountDialog .password-toggle[aria-pressed="true"] .eye-closed{display:block}
+#accountDialog .text-link{min-height:0;padding:0;border:0;border-radius:2px;background:none;color:#8bc6ff;font-size:12px;font-weight:650;line-height:1.5;text-decoration:underline;text-decoration-color:#8bc6ff55;text-underline-offset:3px}
+#accountDialog #accountReset{position:relative;font-size:11px;text-decoration:none;white-space:nowrap}
+#accountDialog #accountReset::after{content:"";position:absolute;inset:-12px 0}
+#accountDialog .primary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px;border:1px solid #ffb54b;border-bottom:4px solid #b83700;background:linear-gradient(110deg,#ff9900,#ff5500);box-shadow:0 4px 14px #ff6a001c;color:#fff;font-size:15px;font-weight:900;font-style:italic;letter-spacing:.45px;text-transform:uppercase;text-shadow:0 1px 2px #9c340077}
+#accountDialog .primary .account-icon{width:23px;height:23px;stroke-width:2.4}
+#accountDialog .register{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:48px;margin-top:12px;border:1px solid #1e90ff;border-bottom:3px solid #1263b4;background:rgba(30,144,255,.15);color:#b9e1ff;font-size:13px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+#accountDialog .register .account-icon{width:18px;height:18px}
+#accountDialog .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#accountDialog .row button{flex:1;font-size:12px}
+#accountIdentity{overflow-wrap:anywhere;color:#fff!important;font-weight:700}
+#accountDialog #accountMessage{margin:16px 0 0;padding:10px 12px;border-left:2px solid #ffb800;border-radius:2px;background:#ffb8000c;color:#ffe1a2;font-size:12px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere}
+#accountDialog #accountMessage:empty{display:none}
+#accountDialog .privacy{margin:20px 0 0;padding-top:15px;border-top:1px solid #ffffff12;color:#8499b5;font-size:11px;line-height:1.8;text-align:center}
+#accountDialog .privacy .text-link{font-size:inherit}
+#accountDialog .privacy a{display:inline-block;color:#a8bfd9;text-underline-offset:3px;text-decoration-color:#a8bfd944}
 #accountDialog [hidden]{display:none!important}
 body:has(#lobbyChrome.hide) #accountButton{display:none}
+@media(hover:hover){
+  #accountDialog .close:hover{background:#e95829;border-color:#ff8860;color:#fff}
+  #accountDialog .google:hover:not(:disabled){background:#fff;box-shadow:0 0 0 2px #ffffff33,0 6px 20px #0004;transform:translateY(-1px)}
+  #accountDialog .primary:hover:not(:disabled){filter:brightness(1.1);box-shadow:0 4px 22px #ff6a003b;transform:translateY(-1px)}
+  #accountDialog .register:hover:not(:disabled){background:#1e90ff38;border-color:#74c0ff;color:#fff}
+  #accountDialog .text-link:hover:not(:disabled),#accountDialog .privacy a:hover{color:#fff}
+  #accountDialog .password-toggle:hover{background:#ffffff0c;color:#fff}
+}
+#accountDialog .google:active:not(:disabled),#accountDialog .primary:active:not(:disabled),#accountDialog .register:active:not(:disabled){transform:translateY(2px);box-shadow:none}
 @media(max-width:1100px),(max-height:600px){.touch-ui #accountButton{width:auto;flex:0 0 auto;min-width:60px;min-height:44px;padding:6px;font-size:9px}.touch-ui #randomNick{display:none}.touch-ui .lobby-profile #nick{font-size:16px}}
-@media(max-width:480px){#accountDialog{padding:22px}#accountDialog h2{font-size:27px}}
+@media(max-width:480px){#accountDialog{width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:24px 22px 20px}#accountDialog h2{font-size:30px;letter-spacing:-1px}#accountDialog .account-heading{margin-bottom:20px}}
+@media(max-width:350px){#accountDialog{padding:22px 16px 18px}#accountDialog h2{font-size:27px}#accountDialog .google{gap:9px;font-size:13px}#accountDialog .primary{font-size:13px}}
+@media(pointer:coarse){#accountDialog .close{width:44px;height:44px;right:9px;top:8px}#accountDialog .privacy .text-link,#accountDialog .privacy a{padding-top:7px;padding-bottom:7px}}
+@media(max-height:600px){#accountDialog .account-heading{margin-bottom:16px}#accountDialog .divider{margin:16px 0}#accountDialog .account-field{margin-bottom:12px}#accountDialog .privacy{margin-top:16px;padding-top:12px}}
+@media(prefers-reduced-motion:reduce){#accountDialog button,#accountDialog input{transition:none}#accountDialog button:active,#accountDialog button:hover{transform:none}}

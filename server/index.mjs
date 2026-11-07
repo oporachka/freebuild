@@ -39,8 +39,8 @@ export function createApp(options = {}) {
         if (origin && !origins.has(origin)) fail('Этот адрес сайта не разрешён.', 403);
         if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS'); res.setHeader('Access-Control-Allow-Headers', 'Authorization,Content-Type'); res.writeHead(204); res.end(); return; }
         limit('ip:' + ipOf(req), 240);
-        if (req.method === 'GET' && url.pathname === '/api/health') return json(res, 200, { ok: true, version: '4.0', authReady: !!config.projectId });
-        if (req.method === 'GET' && url.pathname === '/api/config') return json(res, 200, { firebase: config, version: '4.0', startingBalance: 2000 });
+        if (req.method === 'GET' && url.pathname === '/api/health') return json(res, 200, { ok: true, version: '4.0a', authReady: !!config.projectId });
+        if (req.method === 'GET' && url.pathname === '/api/config') return json(res, 200, { firebase: config, version: '4.0a', startingBalance: 2000 });
         if (!['GET', 'POST'].includes(req.method)) fail('Метод не поддерживается.', 405);
         const token = /^Bearer ([^\s]+)$/.exec(req.headers.authorization || '')?.[1];
         if (!token) fail('Войди в аккаунт.', 401);
@@ -75,6 +75,6 @@ export function createApp(options = {}) {
   return { server, store, close: async () => { clearInterval(cleanup); rooms.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); store.close(); } };
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const app = createApp(); app.server.listen(Number(process.env.PORT || 3100), process.env.HOST || '127.0.0.1', () => console.log('Yosypnite 4.0 ready'));
+  const app = createApp(); app.server.listen(Number(process.env.PORT || 3100), process.env.HOST || '127.0.0.1', () => console.log('Yosypnite 4.0a ready'));
   for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, async () => { await app.close(); process.exit(0); });
 }
