@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Йосыпнайт 4.0</title><meta name="application-name" content="Йосыпнайт"><meta name="version" content="4.0">
+<title>Йосыпнайт 4.0a</title><meta name="application-name" content="Йосыпнайт"><meta name="version" content="4.0a">
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#24162e;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;user-select:none;color:#fff}
 canvas{display:block;width:100%;height:100%}
@@ -396,7 +396,7 @@ body.touch-playing #touchControls{display:block}
  <div class="lobby-modes"><button class="btn lobby-mode online-mode" id="bOnline"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="m11 5 29 29-6 6L5 11V5h6ZM37 5 26 16m-8 10L7 37m21-4 12 12M33 28l12 12M5 35l8 8"/></svg><span><b>В БОЙ / ОНЛАЙН</b><small>Сражение с игроками и ботами</small></span><i>↗</i></button>
  <button class="btn lobby-mode solo-mode" id="bSolo"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 10h36v29H6zM6 24h36M18 10v14m12 0v15M6 39v4m36-4v4"/></svg><span><b>ФРИБИЛД <em>(ОДИНОЧНАЯ)</em></b><small>Строй, редактируй, тренируйся без лимитов</small></span><i>↗</i></button></div>
  <p class="lobby-note">Бесконечные материалы. Полная свобода.</p><p id="menuMsg" role="status"></p>
- <aside class="lobby-news"><span>ОБНОВЛЕНИЕ v4.0</span><strong>Один аккаунт.<br>Твой мир с друзьями.</strong><small>Почта и Google · облачный шкафчик · серверные комнаты.</small></aside></main>
+ <aside class="lobby-news"><span>ОБНОВЛЕНИЕ v4.0a</span><strong>Один аккаунт.<br>Твой мир с друзьями.</strong><small>Почта и Google · облачный шкафчик · серверные комнаты.</small></aside></main>
  <div class="lobby-scene-label"><span>FREEBUILD / CREATIVE</span><b>Следующая победа<br>начинается с тебя.</b></div><footer class="lobby-footer">WASD — движение <span>·</span> B — эмоции <span>·</span> N — колесо чата</footer>
 </div>
 
@@ -410,7 +410,7 @@ body.touch-playing #touchControls{display:block}
  <footer class="locker-actions"><button class="btn" id="lockerBack">СОХРАНИТЬ И ВЕРНУТЬСЯ <span>↗</span></button><p>Изменения сохраняются автоматически.<br>Хитбокс не меняется.</p></footer>
 </div></div>
 <div class="screen hide" id="shop"><div class="shop-hud">
- <header class="locker-heading"><div class="shop-top"><div><span>КОСМЕТИКА · СЕЗОН 4</span><h1>МАГАЗИН</h1></div><div class="shop-timer">ВЕРСИЯ 4.0</div></div><p>ПРИМЕРЯЙ НА ПЕРСОНАЖЕ СПРАВА · ПОКУПКИ СОХРАНЯЮТСЯ В ШКАФЧИКЕ</p></header>
+ <header class="locker-heading"><div class="shop-top"><div><span>КОСМЕТИКА · СЕЗОН 4</span><h1>МАГАЗИН</h1></div><div class="shop-timer">ВЕРСИЯ 4.0a</div></div><p>ПРИМЕРЯЙ НА ПЕРСОНАЖЕ СПРАВА · ПОКУПКИ СОХРАНЯЮТСЯ В ШКАФЧИКЕ</p></header>
  <div class="tabs" role="tablist" aria-label="Категории магазина">
   <button type="button" class="tab on" data-shop-tab="all">ВСЕ</button>
   <button type="button" class="tab" data-shop-tab="bundle">НАБОРЫ</button>
@@ -452,18 +452,29 @@ body.touch-playing #touchControls{display:block}
 </div></div>
 
 
-<dialog id="accountDialog" aria-labelledby="accountTitle">
- <button id="accountClose" class="close" type="button" aria-label="Закрыть">×</button>
- <span class="eyebrow">ЙОСЫПНАЙТ · 4.0</span><h2 id="accountTitle">Твой аккаунт</h2>
- <p>Один шкафчик и баланс на ПК и телефоне.</p>
- <div id="accountFormSection"><button id="accountGoogle" class="google" type="button">Продолжить с Google</button><div class="divider">ИЛИ ПО ПОЧТЕ</div>
- <form id="accountForm"><label>Почта<input id="accountEmail" type="email" autocomplete="email" required maxlength="254"></label><label>Пароль<input id="accountPassword" type="password" autocomplete="current-password" minlength="8" required maxlength="128"></label><button class="primary" type="submit">Войти</button></form>
- <div class="row"><button id="accountRegister" type="button">Создать аккаунт</button><button id="accountReset" type="button">Забыл пароль</button></div></div>
+<dialog id="accountDialog" aria-labelledby="accountTitle" aria-describedby="accountDescription">
+ <button id="accountClose" class="close" type="button" aria-label="Закрыть окно аккаунта"><svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+ <header class="account-heading">
+  <span class="eyebrow">ЙОСЫПНАЙТ · 4.0a</span><h2 id="accountTitle">ТВОЙ АККАУНТ</h2>
+  <p id="accountDescription" class="account-description"><span class="account-devices" aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" focusable="false"><rect x="2" y="3" width="20" height="14" rx="1.5"/><path d="M8 21h8m-4-4v4"/></svg><svg class="account-icon" viewBox="0 0 16 24" focusable="false"><rect x="2" y="2" width="12" height="20" rx="2"/><path d="M7 18h2"/></svg></span><span>Один шкафчик и баланс<br>на ПК и телефоне</span></p>
+ </header>
+ <div id="accountFormSection">
+  <button id="accountGoogle" class="google" type="button" data-account-action><svg class="google-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09Z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.24 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.17v2.84A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.84 14.09a6.6 6.6 0 0 1 0-4.18V7.07H2.17a11 11 0 0 0 0 9.86l3.67-2.84Z"/><path fill="#EA4335" d="M12 5.36c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.57 10.57 0 0 0 12 1a11 11 0 0 0-9.83 6.07l3.67 2.84C6.71 7.29 9.14 5.36 12 5.36Z"/></svg><span>Продолжить с Google</span></button>
+  <div class="divider">ИЛИ ПО ПОЧТЕ</div>
+  <form id="accountForm">
+   <div class="account-field"><label for="accountEmail">ПОЧТА</label><div class="account-input"><svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg><input id="accountEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="you@example.com" required maxlength="254"></div></div>
+   <div class="account-field"><div class="account-label"><label for="accountPassword">ПАРОЛЬ</label><button id="accountReset" class="text-link" type="button" data-account-action>Забыл пароль?</button></div><div class="account-input account-password"><svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg><input id="accountPassword" type="password" autocomplete="current-password" placeholder="Минимум 6 символов" minlength="6" required maxlength="128"><button id="accountPasswordToggle" class="password-toggle" type="button" aria-controls="accountPassword" aria-label="Показать пароль" aria-pressed="false"><svg class="account-icon eye-open" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="account-icon eye-closed" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m3 3 18 18M10.6 5.1 12 5c6.5 0 10 7 10 7a19 19 0 0 1-3.1 4M6.1 6.1A20 20 0 0 0 2 12s3.5 7 10 7a11 11 0 0 0 5-1.2M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div></div>
+   <button class="primary" type="submit" data-account-action><span>ВОЙТИ В АККАУНТ</span><svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button>
+  </form>
+  <button id="accountRegister" class="register" type="button" data-account-action><svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2m4-13v6m-3-3h6"/></svg><span>СОЗДАТЬ АККАУНТ</span></button>
+ </div>
  <div id="accountUserSection" hidden><p id="accountIdentity"></p>
- <div id="accountVerification" hidden><div class="row"><button id="accountVerify" type="button">Я подтвердил почту</button><button id="accountResend" type="button">Отправить письмо ещё раз</button></div></div>
- <div id="accountMigration" hidden><p>Перенеси покупки из этого браузера один раз. Старый баланс не переносится. Новый аккаунт получает 2 000 Эндер-баксов.</p><button id="accountMigrate" class="primary" type="button">Перенести мои покупки</button></div>
- <div class="row"><button id="accountRefresh" type="button">Синхронизировать</button><button id="accountLogout" type="button">Выйти из аккаунта</button></div></div>
- <p id="accountMessage" role="status" aria-live="polite"></p><p class="privacy">Можно закрыть окно и играть гостем. <a href="privacy.html" target="_blank" rel="noopener">Как хранятся данные</a></p>
+  <div id="accountVerification" hidden><div class="row"><button id="accountVerify" type="button" data-account-action>Я подтвердил почту</button><button id="accountResend" type="button" data-account-action>Отправить письмо ещё раз</button></div></div>
+  <div id="accountMigration" hidden><p>Перенеси покупки из этого браузера один раз. Старый баланс не переносится. Новый аккаунт получает 2 000 Эндер-баксов.</p><button id="accountMigrate" class="primary" type="button" data-account-action>Перенести мои покупки</button></div>
+  <div class="row"><button id="accountRefresh" type="button" data-account-action>Синхронизировать</button><button id="accountLogout" type="button" data-account-action>Выйти из аккаунта</button></div>
+ </div>
+ <p id="accountMessage" role="status" aria-live="polite"></p>
+ <p class="privacy"><span id="accountGuestHint">Можно закрыть окно и <button id="accountGuest" class="text-link" type="button">играть гостем</button>.<br></span><a href="privacy.html" target="_blank" rel="noopener">Как хранятся данные</a></p>
 </dialog>
 <script src="client/online.js"></script>
 <script>

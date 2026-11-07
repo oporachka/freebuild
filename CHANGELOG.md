@@ -1,3 +1,9 @@
+# Йосыпнайт 4.0a
+
+Игровое окно аккаунта, контрастные кнопки, показ пароля и удобный гостевой вход. Подробности — [Все версии](https://oporachka.github.io/freebuild/versions/#release-4-0a).
+
+---
+
 # Йосыпнайт 4.0
 
 Аккаунты, облачные покупки и комнаты через VPS. Полная история — [Все версии](https://oporachka.github.io/freebuild/versions/#release-4-0), установка и границы проверки — [SERVER.md](docs/SERVER.md).
