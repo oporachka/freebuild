@@ -8,7 +8,7 @@
 
 **[▶ Играть](https://oporachka.github.io/freebuild/)** · **[Все версии и история обновлений](https://oporachka.github.io/freebuild/versions/)**
 
-**4.1** &nbsp; / &nbsp; ПК и телефон &nbsp; / &nbsp; Рейтинговые дуэли и кооператив
+**4.1a** &nbsp; / &nbsp; ПК и телефон &nbsp; / &nbsp; Рейтинговые дуэли и кооператив
 
 <img src="docs/assets/preview.webp" alt="Лобби Йосыпнайта: боец с киркой, деревянные постройки и выбор режима игры" width="100%">
 
