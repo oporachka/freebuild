@@ -1,0 +1,28 @@
+[Unit]
+Description=Yosypnite game and accounts
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=yosypnite
+Group=yosypnite
+WorkingDirectory=/opt/yosypnite/current
+EnvironmentFile=/etc/yosypnite.env
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3100
+Environment=DATA_DIR=/var/lib/yosypnite
+Environment=TRUST_PROXY=1
+ExecStart=/opt/node/bin/node server/index.mjs
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/yosypnite
+MemoryMax=512M
+LimitNOFILE=8192
+
+[Install]
+WantedBy=multi-user.target

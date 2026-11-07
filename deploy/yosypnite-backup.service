@@ -1,0 +1,13 @@
+[Unit]
+Description=Back up Yosypnite accounts
+[Service]
+Type=oneshot
+User=yosypnite
+Group=yosypnite
+Environment=DATA_DIR=/var/lib/yosypnite
+ExecStart=/opt/node/bin/node /opt/yosypnite/current/server/backup.mjs
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/yosypnite

@@ -1,0 +1,13 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+let html = readFileSync(path.join(root, 'index.html'), 'utf8');
+const version = /name="version" content="([0-9]+\.[0-9]+[a-z]?)"/.exec(html)?.[1];
+if (!version) throw new Error('Version metadata missing');
+html = html.replace('<link rel="stylesheet" href="client/account.css">', '<style>' + readFileSync(path.join(root, 'client/account.css'), 'utf8') + '</style>');
+html = html.replace('<script src="client/online.js"></script>', '<script>' + readFileSync(path.join(root, 'client/online.js'), 'utf8') + '</script>');
+html = html.replace('<script type="module" src="client/account.js"></script>', '<script type="module">' + readFileSync(path.join(root, 'client/account.js'), 'utf8') + '</script>');
+html = html.replace('href="privacy.html"', 'href="../privacy.html"');
+writeFileSync(path.join(root, 'versions', `v${version}.html`), html);
+console.log(`Frozen release ${version}`);

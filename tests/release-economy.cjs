@@ -63,6 +63,7 @@ function fixture(role = 'guest') {
   };
   let now = 10_000;
   const sandbox = {
+    window: {},
     document: { getElementById: element },
     $: element,
     settings: { vbucks: 0, phrase: 1, owned: { phrase: [0, 1], emote: [0, 1] } },
@@ -370,6 +371,15 @@ test('cancelled, paused, and rate-limited phrase selection do not play an extra 
   f.advance(2501);
   f.selectPhrase(1);
   assert.deepEqual(f.calls.emotes, ['endervasi', 'endervasi']);
+});
+
+test('an authenticated reward goes through the server without changing guest money', () => {
+  const f = fixture(); const claims = [];
+  f.s.window.YosypAccount = { active: true, reward: (amount, reason) => claims.push([amount, reason]) };
+  f.s.addVbucks(60, 'толстяк');
+  assert.deepEqual(claims, [[60, 'толстяк']]);
+  assert.equal(f.s.settings.vbucks, 0);
+  assert.equal(f.calls.saved.length, 0);
 });
 
 let failed = 0;

@@ -1,0 +1,4 @@
+yosypnite.177-202-71-15.sslip.io {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:3100
+}
