@@ -93,5 +93,73 @@ test('floor and ramp undersides still stop upward motion', () => {
   const f = fixture(); f.add({ t: 'f', i: 0, j: 0, l: 1 });
   near(f.ceilingAt(2, 2, 3.7, 4.2), 3.85);
   f.pieces.clear(); f.add({ t: 'r', i: 0, j: 0, l: 1, d: 0 });
-  near(f.ceilingAt(2, 2, 5.7, 6.2), 5.85);
+  near(f.ceilingAt(2, 2, 5.2, 6.2), 5.4);
+});
+
+for (const d of [0, 1, 2, 3]) {
+  test('jumping beneath a ramp never lands on it, direction ' + d, () => {
+    for (const height of [1.2, 1.6, 2, 2.4, 2.8, 3.2]) for (const dt of [1 / 60, 1 / 30, .05]) {
+      const f = fixture(); f.add({ t: 'r', i: 0, j: 0, l: 0, d });
+      const x = d === 1 ? height : d === 3 ? 4 - height : 2;
+      const z = d === 0 ? height : d === 2 ? 4 - height : 2;
+      Object.assign(f.s.me, { x, z });
+      for (let frame = 0; frame < 45; frame++) {
+        f.s.held.jump = frame === 0; f.update(dt);
+        assert.ok(f.s.me.y < height - .15, 'Player rose through ramp: ' + JSON.stringify({ d, height, dt, frame, y: f.s.me.y }));
+      }
+    }
+  });
+}
+
+test('a freshly built ramp cannot lift a player from below onto its top', () => {
+  const f = fixture(); f.add({ t: 'r', i: 0, j: 0, l: 0, d: 0 });
+  Object.assign(f.s.me, { x: 2, z: 1.6 }); f.s.liftT = .15;
+  for (let frame = 0; frame < 15; frame++) { f.update(1 / 60); assert.ok(f.s.me.y < 1.45); }
+});
+
+test('moving and holding jump beneath a ramp cannot cross to its top', () => {
+  for (const d of [0, 1, 2, 3]) for (const height of [1.2, 2, 2.8, 3.2])
+    for (const turn of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) for (const dt of [1 / 60, .05]) {
+      const f = fixture(); f.add({ t: 'r', i: 0, j: 0, l: 0, d });
+      Object.assign(f.s.me, {
+        x: d === 1 ? height : d === 3 ? 4 - height : 2,
+        z: d === 0 ? height : d === 2 ? 4 - height : 2,
+        yaw: d * Math.PI / 2 + turn
+      });
+      f.s.held.forward = f.s.held.jump = f.s.held.sprint = true;
+      for (let frame = 0; frame < 45; frame++) {
+        f.update(dt);
+        const { x, y, z } = f.s.me;
+        // Once the player leaves this ramp, a free jump outside it is valid.
+        if (x <= 0 || x >= 4 || z <= 0 || z >= 4) break;
+        const top = (d === 0 ? z : d === 1 ? x : d === 2 ? 4 - z : 4 - x) + .1;
+        assert.ok(y < top - .05, 'Moving player crossed ramp: ' + JSON.stringify({ d, height, turn, dt, frame, x, y, z }));
+      }
+    }
+});
+
+test('ramp edge above the shoulder blocks jumping even with the center outside', () => {
+  const f = fixture(); f.add({ t: 'r', i: 0, j: 0, l: 0, d: 0 });
+  Object.assign(f.s.me, { x: -.2, z: 2.8 });
+  for (let frame = 0; frame < 45; frame++) { f.s.held.jump = frame === 0; f.update(1 / 60); assert.ok(f.s.me.y <= .051); }
+});
+
+test('jumping on top, walking uphill and landing from above still work', () => {
+  const f = fixture(); f.add({ t: 'r', i: 0, j: 0, l: 0, d: 0 });
+  Object.assign(f.s.me, { x: 2, y: 1.6, z: 1.5 });
+  f.s.held.jump = true; f.update(1 / 60); assert.ok(f.s.me.y > 1.6);
+  f.s.held.jump = false;
+  for (let frame = 0; frame < 75; frame++) f.update(1 / 60);
+  near(f.s.me.y, 1.6);
+  f.s.held.forward = true;
+  for (let frame = 0; frame < 10; frame++) f.update(1 / 60);
+  assert.ok(f.s.me.y > 2.4); near(f.s.me.y, f.s.me.z + .1);
+});
+
+test('the missing half of an edited ramp remains open', () => {
+  const f = fixture(); f.add({ t: 'r', i: 0, j: 0, l: 0, d: 0, hs: 0 });
+  Object.assign(f.s.me, { x: 3, z: 1.6 });
+  let highest = 0;
+  for (let frame = 0; frame < 45; frame++) { f.s.held.jump = frame === 0; f.update(1 / 60); highest = Math.max(highest, f.s.me.y); }
+  assert.ok(highest > 1); near(f.s.me.y, 0);
 });
