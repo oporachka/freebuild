@@ -1,5 +1,6 @@
 import { randomInt } from 'node:crypto';
 import { WebSocketServer } from 'ws';
+import { Ranked } from './ranked.mjs';
 
 const HOST_ONLY = new Set(['world', 'zstate', 'zattack', 'zreward']);
 const TYPES = new Set(['hello', 'world', 'act', 'st', 'hit', 'died', 'zhit', 'zreward', 'zstate', 'zattack', 'emote', 'shot', 'ping', 'pong', 'bye']);
@@ -32,10 +33,11 @@ function safe(value, depth = 0) {
   if (Array.isArray(value)) return value.length <= 2500 && value.every(v => safe(v, depth + 1));
   return typeof value === 'object' && Object.keys(value).length <= 80 && Object.entries(value).every(([k, v]) => !['__proto__', 'constructor', 'prototype'].includes(k) && safe(v, depth + 1));
 }
-export function attachRooms(server, { origins, ipOf }) {
+export function attachRooms(server, { origins, ipOf, store, verify, rankedOptions = {} }) {
   const rooms = new Map(), connections = new Map();
   const wss = new WebSocketServer({ noServer: true, maxPayload: 512 * 1024, perMessageDeflate: false });
   const send = (ws, msg) => { if (ws.readyState === 1) { if (ws.bufferedAmount > 1024 * 1024) ws.close(1013, 'Slow connection'); else ws.send(JSON.stringify(msg)); } };
+  const ranked = new Ranked({ store, verify, send, ...rankedOptions });
   function leave(ws) {
     const room = ws.room;
     if (!room || rooms.get(room.code) !== room) return;
@@ -53,9 +55,10 @@ export function attachRooms(server, { origins, ipOf }) {
   wss.on('connection', ws => {
     ws.alive = true; ws.count = 0; ws.window = Date.now(); ws.bytes = 0;
     ws.on('error', () => {});
-    ws.on('pong', () => { ws.alive = true; });
-    const deadline = setTimeout(() => { if (!ws.room) ws.close(1008, 'Join timeout'); }, 10000);
-    ws.on('close', () => { clearTimeout(deadline); leave(ws); const n = (connections.get(ws.ip) || 1) - 1; if (n) connections.set(ws.ip, n); else connections.delete(ws.ip); });
+    ws.on('pong', data => { ws.alive = true; if (data.toString() === String(ws.pingAt)) ws.pingMs = Date.now() - ws.pingAt; });
+    ws.pingAt = Date.now(); ws.ping(String(ws.pingAt));
+    const deadline = setTimeout(() => { if (!ws.room && !ws.rankedQueue && !ws.rankedMatch && !ws.rankAuth) ws.close(1008, 'Join timeout'); }, 10000);
+    ws.on('close', () => { clearTimeout(deadline); ranked.leave(ws); leave(ws); const n = (connections.get(ws.ip) || 1) - 1; if (n) connections.set(ws.ip, n); else connections.delete(ws.ip); });
     ws.on('message', (data, binary) => {
       try {
         const now = Date.now();
@@ -63,18 +66,21 @@ export function attachRooms(server, { origins, ipOf }) {
         ws.bytes += data.length;
         if (binary || ++ws.count > 120 || ws.bytes > 2 * 1024 * 1024) { ws.close(1008, 'Message limit'); return; }
         const m = JSON.parse(data);
-        if (!safe(m) || !m || typeof m !== 'object') return ws.close(1008, 'Invalid message');
+        if (!m || typeof m !== 'object' || Array.isArray(m) || !safe(m.t === 'ranked_queue' ? { ...m, token: null } : m)) return ws.close(1008, 'Invalid message');
+        if (m.t === 'server_ping' && finite(m.k, 1e12)) { send(ws, { t: 'server_pong', k: m.k }); return; }
+        if (ranked.handle(ws, m)) return;
         if (!ws.room) {
-          if (m.ver !== 40 || !['create', 'join'].includes(m.t)) { send(ws, { t: 'error', message: 'Обнови игру до версии 4.0.' }); return; }
+          if (![40, 41].includes(m.ver) || !['create', 'join'].includes(m.t)) { send(ws, { t: 'error', message: 'Обнови игру до версии 4.1.' }); return; }
           ws.nick = typeof m.nick === 'string' ? m.nick.replace(/[<>\p{C}]/gu, '').slice(0, 16) : 'Игрок';
           if (m.t === 'create') {
             if (rooms.size >= 200) { send(ws, { t: 'error', message: 'Сервер заполнен. Попробуй позже.' }); return; }
             let code; do { code = Array.from({ length: 6 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[randomInt(32)]).join(''); } while (rooms.has(code));
-            const room = { code, host: ws, guest: null, game: m.game === 'zombies' ? 'zombies' : 'freebuild', created: now };
+            const room = { code, host: ws, guest: null, game: m.game === 'zombies' ? 'zombies' : 'freebuild', created: now, version: m.ver };
             rooms.set(code, room); ws.room = room; send(ws, { t: 'created', code });
           } else {
             const room = rooms.get(String(m.code || '').toUpperCase());
             if (!room) return send(ws, { t: 'error', message: 'Комната не найдена. Проверь код.' });
+            if (room.version !== m.ver) return send(ws, { t: 'error', message: 'У вас разные версии игры. Откройте одну сборку.' });
             if (room.guest) return send(ws, { t: 'error', message: 'В комнате уже два игрока.' });
             room.guest = ws; ws.room = room;
             send(room.host, { t: 'paired', host: true, game: room.game });
@@ -86,7 +92,7 @@ export function attachRooms(server, { origins, ipOf }) {
         if (m.t !== 'data' || !TYPES.has(m.payload?.t) || !peer) return;
         const p = m.payload;
         if ((HOST_ONLY.has(p.t) && !host) || !validPayload(p)) return;
-        if (p.t === 'hello') { p.nick = ws.nick; p.ver = 40; p.game = room.game; }
+        if (p.t === 'hello') { p.nick = ws.nick; p.ver = room.version; p.game = room.game; }
         if (p.t === 'world' && (!Array.isArray(p.p) || p.p.length > 2500)) return;
         if (p.t === 'act' && (!p.a || !['build', 'edit', 'use', 'damage'].includes(p.a.type))) return;
         if (['hit', 'zhit', 'zattack'].includes(p.t)) p.dmg = Math.max(0, Math.min(p.t === 'zattack' ? 24 : 200, Number(p.dmg) || 0));
@@ -95,8 +101,8 @@ export function attachRooms(server, { origins, ipOf }) {
     });
   });
   const heartbeat = setInterval(() => {
-    for (const ws of wss.clients) { if (!ws.alive || (ws.room && !ws.room.guest && Date.now() - ws.room.created > 900000)) ws.terminate(); else { ws.alive = false; ws.ping(); } }
+    for (const ws of wss.clients) { if (!ws.alive || (ws.room && !ws.room.guest && Date.now() - ws.room.created > 900000)) ws.terminate(); else { ws.alive = false; ws.pingAt = Date.now(); ws.ping(String(ws.pingAt)); } }
   }, 20000);
   heartbeat.unref();
-  return { rooms, close() { clearInterval(heartbeat); for (const ws of wss.clients) ws.terminate(); wss.close(); } };
+  return { rooms, ranked, close() { clearInterval(heartbeat); ranked.close(); for (const ws of wss.clients) ws.terminate(); wss.close(); } };
 }

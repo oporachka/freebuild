@@ -127,7 +127,7 @@ test('all classic inline game scripts compile and the current archive includes i
   for (const filename of ['index.html', `versions/v${current}.html`]) {
     const html = readFileSync(new URL('../' + filename, import.meta.url), 'utf8');
     for (const match of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)) if (!match[1].includes('module') && match[2].trim()) new vm.Script(match[2], { filename });
-    assert.match(html, /NET_VER=40/);
+    assert.match(html, /NET_VER=41/);
     if (filename.startsWith('versions')) { assert.ok(!html.includes('src="client/')); assert.ok(!html.includes('href="client/')); }
   }
 });

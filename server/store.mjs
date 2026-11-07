@@ -20,7 +20,10 @@ export class Store {
       CREATE TABLE IF NOT EXISTS operations(uid TEXT, id TEXT, result TEXT NOT NULL, PRIMARY KEY(uid,id));
       CREATE TABLE IF NOT EXISTS migrations(installation TEXT PRIMARY KEY, uid TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS play_sessions(uid TEXT PRIMARY KEY, id TEXT, started INTEGER, earned INTEGER DEFAULT 0);
-      CREATE TABLE IF NOT EXISTS hourly_rewards(uid TEXT, hour INTEGER, earned INTEGER, PRIMARY KEY(uid,hour));`);
+      CREATE TABLE IF NOT EXISTS hourly_rewards(uid TEXT, hour INTEGER, earned INTEGER, PRIMARY KEY(uid,hour));
+      CREATE TABLE IF NOT EXISTS rankings(uid TEXT PRIMARY KEY, pts INTEGER NOT NULL DEFAULT 1000 CHECK(pts >= 0), wins INTEGER NOT NULL DEFAULT 0, losses INTEGER NOT NULL DEFAULT 0);
+      CREATE TABLE IF NOT EXISTS ranked_matches(id TEXT PRIMARY KEY, player_a TEXT NOT NULL, player_b TEXT NOT NULL, started INTEGER NOT NULL, finished INTEGER, result TEXT);
+      CREATE INDEX IF NOT EXISTS ranked_active ON ranked_matches(finished);`);
   }
   get(uid, nick = 'Игрок') {
     let row = this.db.prepare('SELECT profile FROM players WHERE uid=?').get(uid);
@@ -29,9 +32,51 @@ export class Store {
       this.db.prepare('INSERT INTO players VALUES(?,?)').run(uid, JSON.stringify(p));
       row = { profile: JSON.stringify(p) };
     }
-    return JSON.parse(row.profile);
+    return { ...JSON.parse(row.profile), ranked: this.rating(uid) };
   }
-  save(uid, p) { p.revision++; this.db.prepare('UPDATE players SET profile=? WHERE uid=?').run(JSON.stringify(p), uid); return p; }
+  save(uid, p) { p.revision++; const { ranked, ...saved } = p; this.db.prepare('UPDATE players SET profile=? WHERE uid=?').run(JSON.stringify(saved), uid); return { ...saved, ranked: this.rating(uid) }; }
+  rating(uid) {
+    this.db.prepare('INSERT OR IGNORE INTO rankings(uid) VALUES(?)').run(uid);
+    const { pts, wins, losses } = this.db.prepare('SELECT pts,wins,losses FROM rankings WHERE uid=?').get(uid);
+    return { pts, wins, losses, games: wins + losses };
+  }
+  beginRanked(a, b, now = Date.now()) {
+    if (!a || !b || a === b) fail('Для дуэли нужны два разных аккаунта.');
+    const active = this.db.prepare('SELECT id FROM ranked_matches WHERE finished IS NULL AND (player_a IN (?,?) OR player_b IN (?,?))').get(a, b, a, b);
+    if (active) fail('Аккаунт уже участвует в рейтинговом матче.', 409);
+    this.get(a); this.get(b);
+    const id = randomUUID();
+    this.db.prepare('INSERT INTO ranked_matches(id,player_a,player_b,started) VALUES(?,?,?,?)').run(id, a, b, now);
+    return id;
+  }
+  finishRanked(id, winner, score, reason, now = Date.now()) {
+    if (![null, 0, 1].includes(winner) || !Array.isArray(score) || score.length !== 2 || !score.every(n => Number.isInteger(n) && n >= 0 && n <= 5)) fail('Неверный результат матча.');
+    if (!['win', 'forfeit', 'cancelled', 'server_restart', 'timeout'].includes(reason)) fail('Неверная причина завершения.');
+    if ((reason === 'win' && (winner === null || score[winner] !== 5 || score[1 - winner] >= 5)) || (winner !== null && !['win', 'forfeit'].includes(reason))) fail('Матч ещё не завершён.');
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      const match = this.db.prepare('SELECT * FROM ranked_matches WHERE id=?').get(id);
+      if (!match) fail('Матч не найден.', 404);
+      if (match.result) { this.db.exec('COMMIT'); return JSON.parse(match.result); }
+      const ids = [match.player_a, match.player_b], before = ids.map(uid => this.rating(uid).pts), delta = [0, 0];
+      if (winner !== null) {
+        const loser = 1 - winner;
+        const expected = 1 / (1 + 10 ** ((before[loser] - before[winner]) / 400));
+        const change = Math.max(1, Math.round(32 * (1 - expected)));
+        delta[winner] = change; delta[loser] = -Math.min(before[loser], change);
+        for (let i = 0; i < 2; i++) {
+          this.db.prepare('UPDATE rankings SET pts=pts+?,wins=wins+?,losses=losses+? WHERE uid=?').run(delta[i], i === winner ? 1 : 0, i === loser ? 1 : 0, ids[i]);
+          this.save(ids[i], this.get(ids[i]));
+        }
+      }
+      const result = { id, winner, score, reason, before, delta, ratings: ids.map(uid => this.rating(uid)), finished: now };
+      this.db.prepare('UPDATE ranked_matches SET finished=?,result=? WHERE id=? AND finished IS NULL').run(now, JSON.stringify(result), id);
+      this.db.exec('COMMIT'); return result;
+    } catch (e) { this.db.exec('ROLLBACK'); throw e; }
+  }
+  abortUnfinishedRanked() {
+    for (const { id } of this.db.prepare('SELECT id FROM ranked_matches WHERE finished IS NULL').all()) this.finishRanked(id, null, [0, 0], 'server_restart');
+  }
   operation(uid, id, fn) {
     if (typeof id !== 'string' || !/^[a-zA-Z0-9_-]{12,80}$/.test(id)) fail('Неверный идентификатор операции.');
     this.db.exec('BEGIN IMMEDIATE');

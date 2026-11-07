@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Йосыпнайт 4.0a</title><meta name="application-name" content="Йосыпнайт"><meta name="version" content="4.0a">
+<title>Йосыпнайт 4.1</title><meta name="application-name" content="Йосыпнайт"><meta name="version" content="4.1">
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#24162e;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;user-select:none;color:#fff}
 canvas{display:block;width:100%;height:100%}
@@ -341,7 +341,8 @@ body.touch-playing #touchControls{display:block}
 .touch-ui:not(.touch-playing) #bar{visibility:hidden}
 .touch-setting{display:block}.touch-setting label{display:block;margin-bottom:10px}.touch-setting small{display:block;margin-top:8px;font-size:11px;color:#bdd7ec;line-height:1.4}#touchMode{width:100%;min-height:44px;padding:8px;border:1px solid #769bbf7a;border-radius:6px;background:#13283f;color:white;font:14px system-ui}
 
-</style><link rel="stylesheet" href="client/account.css"></head><body>
+</style><link rel="stylesheet" href="client/account.css">
+<link rel="stylesheet" href="client/ranked.css"></head><body>
 <canvas id="c"></canvas>
 <div id="touchControls" aria-label="Сенсорное управление">
   <div class="touch-topbar">
@@ -393,10 +394,10 @@ body.touch-playing #touchControls{display:block}
 </div>
 <div class="screen" id="menu">
  <main class="lobby-column"><div class="lobby-season">ТВОЯ ПЛОЩАДКА. ТВОИ ПРАВИЛА.</div><h1 class="title">ЙОСЫПНАЙТ</h1><p class="lobby-slogan">СТРОЙ · РЕДАКТИРУЙ · ЛОМАЙ</p>
- <div class="lobby-modes"><button class="btn lobby-mode online-mode" id="bOnline"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="m11 5 29 29-6 6L5 11V5h6ZM37 5 26 16m-8 10L7 37m21-4 12 12M33 28l12 12M5 35l8 8"/></svg><span><b>В БОЙ / ОНЛАЙН</b><small>Сражение с игроками и ботами</small></span><i>↗</i></button>
+ <div class="lobby-modes"><button class="btn lobby-mode online-mode" id="bOnline"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="m11 5 29 29-6 6L5 11V5h6ZM37 5 26 16m-8 10L7 37m21-4 12 12M33 28l12 12M5 35l8 8"/></svg><span><b>В БОЙ / ОНЛАЙН</b><small id="lobbyRankedLabel">Рейтинг 1×1 и комнаты с друзьями</small></span><i>↗</i></button>
  <button class="btn lobby-mode solo-mode" id="bSolo"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 10h36v29H6zM6 24h36M18 10v14m12 0v15M6 39v4m36-4v4"/></svg><span><b>ФРИБИЛД <em>(ОДИНОЧНАЯ)</em></b><small>Строй, редактируй, тренируйся без лимитов</small></span><i>↗</i></button></div>
  <p class="lobby-note">Бесконечные материалы. Полная свобода.</p><p id="menuMsg" role="status"></p>
- <aside class="lobby-news"><span>ОБНОВЛЕНИЕ v4.0a</span><strong>Один аккаунт.<br>Твой мир с друзьями.</strong><small>Почта и Google · облачный шкафчик · серверные комнаты.</small></aside></main>
+ <aside class="lobby-news"><span>ОБНОВЛЕНИЕ v4.1</span><strong>Твой рейтинг.<br>Твоя победа.</strong><small>ПТС · подбор соперника · дуэли 1×1 до 5 побед.</small></aside></main>
  <div class="lobby-scene-label"><span>FREEBUILD / CREATIVE</span><b>Следующая победа<br>начинается с тебя.</b></div><footer class="lobby-footer">WASD — движение <span>·</span> B — эмоции <span>·</span> N — колесо чата</footer>
 </div>
 
@@ -410,7 +411,7 @@ body.touch-playing #touchControls{display:block}
  <footer class="locker-actions"><button class="btn" id="lockerBack">СОХРАНИТЬ И ВЕРНУТЬСЯ <span>↗</span></button><p>Изменения сохраняются автоматически.<br>Хитбокс не меняется.</p></footer>
 </div></div>
 <div class="screen hide" id="shop"><div class="shop-hud">
- <header class="locker-heading"><div class="shop-top"><div><span>КОСМЕТИКА · СЕЗОН 4</span><h1>МАГАЗИН</h1></div><div class="shop-timer">ВЕРСИЯ 4.0a</div></div><p>ПРИМЕРЯЙ НА ПЕРСОНАЖЕ СПРАВА · ПОКУПКИ СОХРАНЯЮТСЯ В ШКАФЧИКЕ</p></header>
+ <header class="locker-heading"><div class="shop-top"><div><span>КОСМЕТИКА · СЕЗОН 4</span><h1>МАГАЗИН</h1></div><div class="shop-timer">ВЕРСИЯ 4.1</div></div><p>ПРИМЕРЯЙ НА ПЕРСОНАЖЕ СПРАВА · ПОКУПКИ СОХРАНЯЮТСЯ В ШКАФЧИКЕ</p></header>
  <div class="tabs" role="tablist" aria-label="Категории магазина">
   <button type="button" class="tab on" data-shop-tab="all">ВСЕ</button>
   <button type="button" class="tab" data-shop-tab="bundle">НАБОРЫ</button>
@@ -434,7 +435,7 @@ body.touch-playing #touchControls{display:block}
  </footer>
 </div></div>
 
-<div class="screen hide side-screen" id="online"><div class="mode-hud"><header class="settings-heading"><span>ИГРАЙ ВМЕСТЕ</span><h1>ОНЛАЙН</h1><p>СОЗДАЙ КОМНАТУ ИЛИ ПРИСОЕДИНИСЬ К ДРУГУ</p></header><div class="mode-scroll"><div class="online-tiles" role="group" aria-label="Режим комнаты"><button data-room-mode="freebuild" aria-pressed="true"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 8h36v32H6zM6 24h36M18 8v16m12 0v16"/></svg><b>1 НА 1</b><small>FREEBUILD</small></button><button data-room-mode="zombies" aria-pressed="false"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 30C-1 6 48-1 38 29l-5 5v9H16v-9zM19 35v7m7-7v7"/><circle cx="17" cy="22" r="4"/><circle cx="31" cy="22" r="4"/><path d="m22 29 2-4 3 4"/></svg><b>ЗОМБИ</b><small>ВЫЖИВАНИЕ ВДВОЁМ</small></button></div><input type="hidden" id="onlineMode" value="freebuild"><button class="btn sport-primary" id="bHost">СОЗДАТЬ КОМНАТУ <span>＋</span></button><div id="hostBox" class="hide room-code"><small>ТВОЙ КОД КОМНАТЫ</small><div id="roomCode">-----</div><button class="btn sport-secondary" id="bCopy">СКОПИРОВАТЬ КОД</button></div><div class="join-block"><label for="joinCode">КОД ДРУГА</label><input type="text" id="joinCode" maxlength="6" placeholder="XXXXX" autocomplete="off" spellcheck="false"><button class="btn sport-blue" id="bJoin">ВОЙТИ В КОМНАТУ <span>↗</span></button></div><p id="netStatus" role="status"></p><p class="online-help">Отправь другу код. Оба игрока должны открыть одну версию игры. Режим выбирает создатель комнаты.</p></div><footer class="mode-footer"><button class="btn sport-secondary" id="bOnBack">НАЗАД</button></footer></div></div>
+<div class="screen hide side-screen" id="online"><div class="mode-hud"><header class="settings-heading"><span>ИГРАЙ ВМЕСТЕ</span><h1>ОНЛАЙН</h1><p>ПОДНИМАЙ ПТС ИЛИ ИГРАЙ С ДРУЗЬЯМИ</p></header><div class="mode-scroll"><section class="ranked-card" aria-labelledby="rankedTitle"><div class="ranked-head"><div><small>ДУЭЛЬ ДО 5 ПОБЕД</small><h2 id="rankedTitle">РЕЙТИНГ 1×1</h2></div><div class="ranked-points"><b id="rankedPts">—</b><span>ТВОИ ПТС</span></div></div><p id="rankedRecord">1 000 ПТС на старте · нужен аккаунт</p><p class="ranked-rules">Подбор по близкому ПТС. Побеждай и поднимай рейтинг.<br>Выход из начавшейся дуэли — поражение.</p><button class="btn primary" id="rankedFind" type="button">ВОЙТИ И ИГРАТЬ</button><button class="btn" id="rankedCancel" type="button" hidden>ОТМЕНИТЬ ПОИСК</button><p id="rankedStatus" role="status" aria-live="polite">При равном рейтинге: примерно +16 / −16 ПТС за матч.</p></section><p class="ranked-casual-label">С ДРУГОМ · БЕЗ ИЗМЕНЕНИЯ ПТС</p><div class="online-tiles" role="group" aria-label="Режим комнаты"><button data-room-mode="freebuild" aria-pressed="true"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 8h36v32H6zM6 24h36M18 8v16m12 0v16"/></svg><b>1 НА 1</b><small>FREEBUILD</small></button><button data-room-mode="zombies" aria-pressed="false"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 30C-1 6 48-1 38 29l-5 5v9H16v-9zM19 35v7m7-7v7"/><circle cx="17" cy="22" r="4"/><circle cx="31" cy="22" r="4"/><path d="m22 29 2-4 3 4"/></svg><b>ЗОМБИ</b><small>ВЫЖИВАНИЕ ВДВОЁМ</small></button></div><input type="hidden" id="onlineMode" value="freebuild"><button class="btn sport-primary" id="bHost">СОЗДАТЬ КОМНАТУ <span>＋</span></button><div id="hostBox" class="hide room-code"><small>ТВОЙ КОД КОМНАТЫ</small><div id="roomCode">-----</div><button class="btn sport-secondary" id="bCopy">СКОПИРОВАТЬ КОД</button></div><div class="join-block"><label for="joinCode">КОД ДРУГА</label><input type="text" id="joinCode" maxlength="6" placeholder="XXXXX" autocomplete="off" spellcheck="false"><button class="btn sport-blue" id="bJoin">ВОЙТИ В КОМНАТУ <span>↗</span></button></div><p id="netStatus" role="status"></p><p class="online-help">Отправь другу код. Оба игрока должны открыть одну версию игры. Режим выбирает создатель комнаты.</p></div><footer class="mode-footer"><button class="btn sport-secondary" id="bOnBack">НАЗАД</button></footer></div></div>
 <div class="screen hide" id="pause"><div class="panel">
  <h2 id="pauseH">Пауза</h2>
  <button class="btn sport-primary" id="bResume">ПРОДОЛЖИТЬ <svg viewBox="0 0 48 48" aria-hidden="true"><path d="m16 7 25 17-25 17z"/></svg></button>
@@ -452,10 +453,12 @@ body.touch-playing #touchControls{display:block}
 </div></div>
 
 
+<aside id="rankedHud" class="hide"><strong id="rankedStateLabel">РЕЙТИНГ 1×1</strong><small id="rankedStateDetail">До 5 побед</small></aside>
+<dialog id="rankedResult" aria-labelledby="rankedResultTitle"><small>ЙОСЫПНАЙТ · РЕЙТИНГ 1×1</small><h2 id="rankedResultTitle">МАТЧ ЗАВЕРШЁН</h2><div id="rankedResultScore">0 : 0</div><div id="rankedResultPts">0 ПТС</div><p id="rankedResultBalance"></p><p id="rankedResultReason"></p><button class="btn primary" id="rankedAgain" type="button">НАЙТИ НОВОГО СОПЕРНИКА</button><button class="btn" id="rankedDone" type="button">В ЛОББИ</button></dialog>
 <dialog id="accountDialog" aria-labelledby="accountTitle" aria-describedby="accountDescription">
  <button id="accountClose" class="close" type="button" aria-label="Закрыть окно аккаунта"><svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
  <header class="account-heading">
-  <span class="eyebrow">ЙОСЫПНАЙТ · 4.0a</span><h2 id="accountTitle">ТВОЙ АККАУНТ</h2>
+  <span class="eyebrow">ЙОСЫПНАЙТ · 4.1</span><h2 id="accountTitle">ТВОЙ АККАУНТ</h2>
   <p id="accountDescription" class="account-description"><span class="account-devices" aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" focusable="false"><rect x="2" y="3" width="20" height="14" rx="1.5"/><path d="M8 21h8m-4-4v4"/></svg><svg class="account-icon" viewBox="0 0 16 24" focusable="false"><rect x="2" y="2" width="12" height="20" rx="2"/><path d="M7 18h2"/></svg></span><span>Один шкафчик и баланс<br>на ПК и телефоне</span></p>
  </header>
  <div id="accountFormSection">
@@ -468,7 +471,7 @@ body.touch-playing #touchControls{display:block}
   </form>
   <button id="accountRegister" class="register" type="button" data-account-action><svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2m4-13v6m-3-3h6"/></svg><span>СОЗДАТЬ АККАУНТ</span></button>
  </div>
- <div id="accountUserSection" hidden><p id="accountIdentity"></p>
+ <div id="accountUserSection" hidden><p id="accountIdentity"></p><p id="accountRanked"></p>
   <div id="accountVerification" hidden><div class="row"><button id="accountVerify" type="button" data-account-action>Я подтвердил почту</button><button id="accountResend" type="button" data-account-action>Отправить письмо ещё раз</button></div></div>
   <div id="accountMigration" hidden><p>Перенеси покупки из этого браузера один раз. Старый баланс не переносится. Новый аккаунт получает 2 000 Эндер-баксов.</p><button id="accountMigrate" class="primary" type="button" data-account-action>Перенести мои покупки</button></div>
   <div class="row"><button id="accountRefresh" type="button" data-account-action>Синхронизировать</button><button id="accountLogout" type="button" data-account-action>Выйти из аккаунта</button></div>
@@ -566,13 +569,13 @@ function collapseCheck(){const m=edgeMap(),seen=new Set(),q=[];for(const[k,p]of 
  if(n){dirty=true;SFX.play('collapse',pos)}return n}
 // ================= Онлайн 1 на 1 (WebSocket через игровой сервер) =================
 // Все изменения мира идут через dispatch(action) и пересылаются сопернику.
-// Попадания считает стрелок, урон применяет тот, в кого попали.
-const NET_VER=40,SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
-const Net={online:false,host:false,zRewarded:new Set(),me:'local',conn:null,peer:null,score:{me:0,op:0},ping:0,sendT:0,pingT:0,
+// В обычных комнатах попадания считает стрелок; рейтинг и урон дуэли ведёт сервер.
+const NET_VER=41,RANKED_SPAWNS=[[2,0,-14,0],[2,0,18,Math.PI]],SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
+const Net={online:false,host:false,ranked:false,rankPhase:null,rankRound:0,peerPing:0,zRewarded:new Set(),me:'local',conn:null,peer:null,score:{me:0,op:0},ping:0,sendT:0,pingT:0,
  send(a){this.msg({t:'act',a})},
  msg(o){try{if(this.conn&&this.conn.open)this.conn.send(o)}catch(e){}},
  status(t){document.getElementById('netStatus').textContent=t},
- reset(){this.zRewarded.clear();try{if(this.conn)this.conn.close()}catch(e){}try{if(this.peer)this.peer.destroy()}catch(e){}this.conn=null;this.peer=null;this.online=false;this.host=false;this.me='local';rp.vis=false;clearTimeout(this.joinTimer)},
+ reset(){this.zRewarded.clear();try{if(this.conn)this.conn.close()}catch(e){}try{if(this.peer)this.peer.destroy()}catch(e){}this.conn=null;this.peer=null;this.online=false;this.host=false;this.ranked=false;this.rankPhase=null;this.rankRound=0;this.me='local';rp.vis=false;clearTimeout(this.joinTimer)},
  leave(why){if(this.online)this.msg({t:'bye'});this.reset();document.getElementById('menuMsg').textContent=why||'';document.getElementById('score').classList.add('hide');rp.el.style.display='none'}};
 const rp={vis:false,dead:false,nick:'Соперник',hp:100,sh:100,st:null,tgt:null,el:null};
 rp.el=document.createElement('div');rp.el.className='db';rp.el.style.display='none';rp.el.innerHTML='<div class="nm"></div><div class="bar s"><i></i></div><div class="bar h"><i></i></div>';document.getElementById('dyn').appendChild(rp.el);
@@ -586,10 +589,12 @@ const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function peerErr(e){const m={'peer-unavailable':'Комната не найдена. Проверь код (и что друг не закрыл вкладку).','network':'Проблема с сетью.','server-error':'Сервер соединения недоступен, попробуй ещё раз.','browser-incompatible':'Браузер не поддерживает WebRTC.','unavailable-id':'Код занят, создаю новый…'};return m[e&&e.type]||('Ошибка: '+(e&&(e.type||e.message)||e))}
 let onlineGame='freebuild';
 async function hostRoom(){
+ if(window.YosypRanked?.busy)return;
  Net.reset();onlineGame=document.getElementById('onlineMode').value==='zombies'?'zombies':'freebuild';initWorld(onlineGame);Net.status('Подключаюсь к серверу…');
  Net.peer=window.YosypOnline.connect({host:true,game:onlineGame,nick:settings.nick||'Игрок',setup:setupConn,status:t=>Net.status(t),created:code=>{document.getElementById('hostBox').classList.remove('hide');document.getElementById('roomCode').textContent=code;Net.status('Отправь код другу. Комната готова.')}});
 }
 async function joinRoom(code){
+ if(window.YosypRanked?.busy)return;
  code=(code||'').trim().toUpperCase();if(!/^[A-Z2-9]{6}$/.test(code)){Net.status('Введи шестизначный код комнаты');return;}
  Net.reset();Net.status('Ищу комнату '+code+'…');
  Net.peer=window.YosypOnline.connect({host:false,code,nick:settings.nick||'Игрок',setup:setupConn,status:t=>Net.status(t),created:()=>{}});
@@ -613,8 +618,8 @@ function netHandle(m){if(!m||typeof m!='object')return;
  case 'world':SFX.muted=true;pieces.clear();building.clear();animating.clear();frags.length=0;editP=null;for(const q of m.p||[]){const p=Object.assign({},q);if(dispatch({type:'build',p},true)){const z=pieces.get(keyOf(p));if(z){z.hp=Math.max(0,Math.min(z.maxhp,Number.isFinite(q.hp)?q.hp:z.maxhp));z.bt=Number.isFinite(q.bt)?Math.max(0,Math.min(1,q.bt)):1;if(z.bt>=1)building.delete(z);if(q.open){z.open=true;z.anim=1;finalize(z)}}}}SFX.muted=false;dirty=true;break;
  case 'act':if(m.a&&m.a.type!='clear')dispatch(m.a,true);break;
  case 'st':{const q=m.s;if(!q)return;rp.hp=q.hp;rp.sh=q.sh;const wasDead=rp.dead;rp.dead=!!q.dead;rp.tgt=q;if(!rp.st||wasDead&&!rp.dead||!rp.vis)rp.st=Object.assign({},q);rp.vis=true;break}
- case 'hit':if(mode=='dead'||!Net.online||currentMap==='zombies')return;damagePlayer(+m.dmg||0,(m.w||'выстрел')+' от '+rp.nick+(m.head?' (в голову)':''));break;
- case 'died':if(currentMap==='zombies'){rp.dead=true;break}SFX.play('kill');Net.score.me++;updScore();feed('Ты устранил '+rp.nick+'!');rp.dead=true;burst([rp.st?rp.st.x:0,(rp.st?rp.st.y:0)+1,rp.st?rp.st.z:0],[1,.4,.3],24,6);break;
+ case 'hit':if(Net.ranked||mode=='dead'||!Net.online||currentMap==='zombies')return;damagePlayer(+m.dmg||0,(m.w||'выстрел')+' от '+rp.nick+(m.head?' (в голову)':''));break;
+ case 'died':if(Net.ranked)return;if(currentMap==='zombies'){rp.dead=true;break}SFX.play('kill');Net.score.me++;updScore();feed('Ты устранил '+rp.nick+'!');rp.dead=true;burst([rp.st?rp.st.x:0,(rp.st?rp.st.y:0)+1,rp.st?rp.st.z:0],[1,.4,.3],24,6);break;
  case 'zhit':if(Net.online&&Net.host&&Net.conn?.open&&currentMap==='zombies'&&mode!=='menu')applyZombieHit(m.id,m.dmg);break;
  case 'zreward':{
   if(!Net.online||Net.host||!Net.conn?.open||currentMap!=='zombies'||mode==='menu')break;
@@ -626,9 +631,10 @@ function netHandle(m){if(!m||typeof m!='object')return;
  case 'zstate':if(currentMap==='zombies'&&!Net.host)applyZombieState(m);break;
  case 'zattack':if(currentMap==='zombies'&&!Net.host)damagePlayer(Math.max(0,Math.min(24,+m.dmg||0)),'зомби');break;
  case 'emote':playEmote(m.action,true);break;
- case 'shot':SFX.play(m.s=='sg'?'sg':'ar',m.a);if(Array.isArray(m.b))for(const b of m.b.slice(0,12))tracers.push({a:m.a,b,t:.08,col:[1,.6,.4]});if(rp.st)rp.st.kick=1;break;
+ case 'shot':SFX.play(m.s==='pick'?'swing':m.s=='sg'?'sg':'ar',m.a);if(Array.isArray(m.b))for(const b of m.b.slice(0,12))tracers.push({a:m.a,b,t:.08,col:[1,.6,.4]});if(rp.st)rp.st.kick=1;break;
  case 'ping':Net.msg({t:'pong',k:m.k});break;
- case 'pong':Net.ping=Math.round(performance.now()-m.k);break;
+ case 'pong':Net.peerPing=Math.round(performance.now()-m.k);break;
+ case 'serverpong':Net.ping=Math.round(performance.now()-m.k);break;
  case 'bye':Net.leave('Соперник вышел из матча');if(mode!='menu'){respawn();setMode('menu')}break}}
 function netTick(dt){if(!Net.online)return;
  if(performance.now()-Net.lastRx>8000){Net.leave('Связь с соперником потеряна');if(mode!='menu'){respawn();setMode('menu')}return}
@@ -638,12 +644,15 @@ function netTick(dt){if(!Net.online)return;
 }
 setInterval(()=>{if(Net.online)Net.msg({t:'ping',k:performance.now()})},1000);
 document.getElementById('bOnline').onclick=()=>{initWorld('freebuild');document.getElementById('menu').classList.add('hide');document.getElementById('online').classList.remove('hide');Net.status('')};
-document.getElementById('bOnBack').onclick=()=>{Net.reset();document.getElementById('hostBox').classList.add('hide');document.getElementById('online').classList.add('hide');document.getElementById('menu').classList.remove('hide')};
+document.getElementById('bOnBack').onclick=()=>{window.YosypRanked?.cancelQueue();Net.reset();document.getElementById('hostBox').classList.add('hide');document.getElementById('online').classList.add('hide');document.getElementById('menu').classList.remove('hide')};
 document.getElementById('bHost').onclick=hostRoom;
 document.getElementById('bJoin').onclick=()=>joinRoom(document.getElementById('joinCode').value);
 document.getElementById('joinCode').onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')joinRoom(e.target.value)};
 document.getElementById('bCopy').onclick=()=>{const c=document.getElementById('roomCode').textContent;(navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>Net.status('Код скопирован: '+c)).catch(()=>Net.status('Код: '+c))};
-function dispatch(a,remote){const r=applyAction(a);if(!remote&&Net.online&&r)Net.send(a);return r}
+function dispatch(a,remote){
+ if(!remote&&Net.ranked){if(Net.rankPhase!=='playing')return false;if(a.type==='damage'){if(a.dmg>=1e9){Net.send({type:'remove',k:a.k});return true}return false}Net.send(a);return true}
+ const r=applyAction(a);if(remote&&Net.ranked&&r&&a.type==='build'){const p=pieces.get(keyOf(a.p));p.hp=p.maxhp;p.bt=1;building.delete(p)}if(!remote&&Net.online&&r)Net.send(a);return r}
+
 addEventListener('beforeunload',()=>{if(Net.online)Net.msg({t:'bye'})});
 
 
@@ -997,13 +1006,13 @@ function raycast(o,d,maxT,onlyPieces){let best=null,bt=maxT;
 function updateVitals(){document.querySelector('#hpBar i').style.width=me.hp+'%';document.querySelector('#hpBar span').textContent=Math.ceil(me.hp);
  document.querySelector('#shBar i').style.width=me.sh+'%';document.querySelector('#shBar span').textContent=Math.ceil(me.sh)}
 // В онлайне сюда будут приходить попадания от других игроков
-function damagePlayer(amount,why,ignoreShield){if(mode!='play'&&!(Net.online&&mode=='pause'))return;let rest=amount;
+function damagePlayer(amount,why,ignoreShield){if(Net.ranked)return;if(mode!='play'&&!(Net.online&&mode=='pause'))return;let rest=amount;
  if(!ignoreShield&&me.sh>0){const s=Math.min(me.sh,rest);me.sh-=s;rest-=s}me.hp=Math.max(0,me.hp-rest);
  const v=document.getElementById('vign');v.style.transition='none';v.style.opacity=1;requestAnimationFrame(()=>{v.style.transition='opacity .6s';v.style.opacity=0});
  dmgNum([me.x+Math.sin(me.yaw)*2,me.y+1.6,me.z+Math.cos(me.yaw)*2],'-'+Math.round(amount),'me');
  SFX.play('hurt');updateVitals();if(me.hp<=0)die(why)}
 function die(why){SFX.play('death');castT=0;editP=null;dirty=true;document.getElementById('deadWhy').textContent='Причина: '+why;if(Net.online){Net.msg({t:'died',why});if(currentMap!=='zombies'){Net.score.op++;updScore();feed('Тебя устранил '+rp.nick)}}setMode('dead')}
-function respawn(){const sp=currentMap==='zombies'?(Net.online?(Net.host?[-3,0,0,0]:[3,0,0,0]):[0,0,0,0]):Net.online?SPAWNS[Net.host?0:1]:currentMap==='training'?[-6,0,0,0]:[2,0,2,0];Object.assign(me,{x:sp[0],y:sp[1],z:sp[2],vy:0,yaw:sp[3],pitch:0,emote:null,emoteT:0,hp:100,sh:100,sup:null,onGround:true,stam:100,stamCd:0,cr:false,crT:0,spr:false});ammo.ar=30;ammo.sg=5;reloadT=0;updateVitals()}
+function respawn(){const sp=Net.ranked?RANKED_SPAWNS[Net.host?0:1]:currentMap==='zombies'?(Net.online?(Net.host?[-3,0,0,0]:[3,0,0,0]):[0,0,0,0]):Net.online?SPAWNS[Net.host?0:1]:currentMap==='training'?[-6,0,0,0]:[2,0,2,0];Object.assign(me,{x:sp[0],y:sp[1],z:sp[2],vy:0,yaw:sp[3],pitch:0,emote:null,emoteT:0,hp:100,sh:100,sup:null,onGround:true,stam:100,stamCd:0,cr:false,crT:0,spr:false});ammo.ar=30;ammo.sg=5;reloadT=0;updateVitals()}
 function damageDummy(dm,dmg,head,pt){let rest=dmg;dm.flash=.1;if(dm.sh>0){const s=Math.min(dm.sh,rest);dm.sh-=s;rest-=s;dmgNum(pt,Math.round(dmg),head?'hd':'sh')}else dmgNum(pt,Math.round(dmg),head?'hd':'');
  dm.hp-=rest;if(dm.hp<=0){dm.dead=3;burst([dm.x,1,dm.z],[1,.55,.2],20,6);addVbucks(25,'мишень');}hitMarker(head)}
 
@@ -1012,21 +1021,21 @@ function damageDummy(dm,dmg,head,pt){let rest=dmg;dm.flash=.1;if(dm.sh>0){const 
 function shotRay(w){const ar=CFN.silentRay(aimRay()),h=raycast(ar.o,ar.d,w.range||250),t=h?Math.min(w.range||250,h.t+.2):(w.range||250),target=ar.o.map((v,i)=>v+ar.d[i]*t),center=[me.x,me.y+EYE-.55*(me.crT||0),me.z];
  const side=[-Math.cos(me.yaw),0,Math.sin(me.yaw)],maxSide=settings.thirdPerson&&!w.melee?.75:0,block=maxSide?raycast(center,side,maxSide,true):null,offset=block?Math.max(0,block.t-.04):maxSide;
  const o=center.map((v,i)=>v+side[i]*offset),v=sub(target,o);return{o,d:Math.hypot(...v)>1e-5?norm(v):ar.d}}
-function fire(){if(me.emoteT>0)return;const w=W[slot];const AR=shotRay(w),o=AR.o,f=AR.d,r=norm(cross(f,[0,1,0])),u=cross(r,f);
+function fire(){if(me.emoteT>0||(Net.ranked&&Net.rankPhase!=='playing'))return;if(Net.ranked)Net.msg({t:'st',s:myState()});const w=W[slot];const AR=shotRay(w),o=AR.o,f=AR.d,r=norm(cross(f,[0,1,0])),u=cross(r,f);
  if(!w.melee){if(reloadT>0)return;if(ammo[slot]<=0){startReload();return}ammo[slot]--}
  const shotEnds=[],pieceHits=[];let pDmg=0,pHead=false,sndHit=0;
  for(let k=0;k<w.pellets;k++){const a=Math.random()*6.283,s=Math.sqrt(Math.random())*w.spread*CFN.spread()*(me.cr?.6:me.spr?1.6:1);
   const d=norm([f[0]+(r[0]*Math.cos(a)+u[0]*Math.sin(a))*s,f[1]+(r[1]*Math.cos(a)+u[1]*Math.sin(a))*s,f[2]+(r[2]*Math.cos(a)+u[2]*Math.sin(a))*s]);
-  const h=raycast(o,d,w.melee?w.range:w.range);if(!w.melee)shotEnds.push(h?h.pt:[o[0]+d[0]*Math.min(w.range,90),o[1]+d[1]*Math.min(w.range,90),o[2]+d[2]*Math.min(w.range,90)]);if(!h)continue;
+  const h=raycast(o,d,w.melee?w.range:w.range);if(!w.melee||Net.ranked)shotEnds.push(h?h.pt:[o[0]+d[0]*Math.min(w.range,90),o[1]+d[1]*Math.min(w.range,90),o[2]+d[2]*Math.min(w.range,90)]);if(!h)continue;
   if(h.kind=='piece'){burst(h.pt,MATS[h.p.mat].c,3,3);if(!sndHit){sndHit=1;SFX.play(['hitWood','hitStone','hitMetal'][h.p.mat],h.pt,.7)}pieceHits.push({type:'damage',k:h.k,dmg:w.bdmg||w.dmg});}
-  else if(h.kind=='player'){const dm=w.dmg*(h.head?w.head:1);pDmg+=dm;pHead=pHead||h.head;dmgNum(h.pt,Math.round(dm),h.head?'hd':(rp.sh>0?'sh':''));burst(h.pt,[.9,.2,.2],3,3)}
+  else if(h.kind=='player'){const dm=w.dmg*(h.head?w.head:1);pDmg+=dm;pHead=pHead||h.head;if(!Net.ranked)dmgNum(h.pt,Math.round(dm),h.head?'hd':(rp.sh>0?'sh':''));burst(h.pt,[.9,.2,.2],3,3)}
   else if(h.kind==='zombie')zombieHit(h.z,w.dmg*(h.head?w.head:1),h.head,h.pt);else damageDummy(h.dm,w.dmg*(h.head?w.head:1),h.head,h.pt)}
- for(const a of pieceHits)dispatch(a);
- if(pDmg>0){Net.msg({t:'hit',dmg:pDmg,head:pHead,w:w.name});hitMarker(pHead)}
+ if(!Net.ranked)for(const a of pieceHits)dispatch(a);
+ if(pDmg>0&&!Net.ranked){Net.msg({t:'hit',dmg:pDmg,head:pHead,w:w.name});hitMarker(pHead)}
  if(shotEnds.length){const ha=o;for(const b of shotEnds)tracers.push({a:ha,b,t:.07});Net.msg({t:'shot',s:slot,a:ha,b:shotEnds.map(p=>p.map(x=>Math.round(x*100)/100))})}
  SFX.play(w.melee?'swing':slot);vmKick=1;me.pitch=Math.min(1.5,me.pitch+w.kick*(.6+Math.random()*.4));if(w.melee)swing=1;
  cd=1/w.rate;if(!w.melee&&ammo[slot]<=0)startReload()}
-function startReload(){if(me.emoteT>0)return;if((slot=='ar'||slot=='sg')&&reloadT<=0&&ammo[slot]<W[slot].mag){reloadT=W[slot].reload;SFX.play('reload',null,.7)}}
+function startReload(){if(me.emoteT>0)return;if((slot=='ar'||slot=='sg')&&reloadT<=0&&ammo[slot]<W[slot].mag){reloadT=W[slot].reload;if(Net.ranked){Net.msg({t:'st',s:myState()});Net.msg({t:'reload',s:slot})}SFX.play('reload',null,.7)}}
 function setSlot(s){if(me.emoteT>0||s===slot)return;if(editP)cancelEdit();slot=s;SFX.play('equip',null,.6);castT=0;switchT=.25;reloadT=0;cd=Math.max(cd,.15);
  document.querySelectorAll('.slot[data-s]').forEach(e=>e.classList.toggle('on',e.dataset.s==s));
  document.getElementById('ring').classList.toggle('hide',s!='sg');buildVM()}
@@ -1273,7 +1282,7 @@ function resetCourse(silent=false){
  dirty=true;if(!silent)feed('Тренировка восстановлена');
 }
 function initWorld(which){
- window.YosypAccount?.beginPlay();
+ if(which!=='ranked')window.YosypAccount?.beginPlay();
  currentMap=which;resetZombies();if(editP)endEdit();pieces.clear();building.clear();animating.clear();frags.length=0;dirty=true;
  if(which==='training')resetCourse(true);
  if(which==='freebuild')for(const q of [{t:'r',i:0,j:2,l:0,d:2,mat:2},{t:'r',i:0,j:3,l:0,d:0,mat:2}]){
@@ -1345,7 +1354,7 @@ const SHOP_ITEMS=[
 ];
 let shopTab='all',shopSel={kind:'bundle',id:'cyber_pack'},shopPreview={skin:null,pick:null,emote:''};
 function clearShopPreview(){shopPreview={skin:null,pick:null,emote:''};}
-function setLobbyTab(tab){document.querySelectorAll('.lobby-tab').forEach(e=>{const on=e.id===({play:'lobbyPlay',locker:'bLocker',shop:'bShop',settings:'bSet1'}[tab]);e.classList.toggle('active',on);if(on)e.setAttribute('aria-current','page');else e.removeAttribute('aria-current');});document.body.classList.toggle('locker-open',tab==='locker'||tab==='shop');document.body.classList.toggle('shop-open',tab==='shop');if(tab!=='shop')clearShopPreview();}
+function setLobbyTab(tab){window.YosypRanked?.cancelQueue();document.querySelectorAll('.lobby-tab').forEach(e=>{const on=e.id===({play:'lobbyPlay',locker:'bLocker',shop:'bShop',settings:'bSet1'}[tab]);e.classList.toggle('active',on);if(on)e.setAttribute('aria-current','page');else e.removeAttribute('aria-current');});document.body.classList.toggle('locker-open',tab==='locker'||tab==='shop');document.body.classList.toggle('shop-open',tab==='shop');if(tab!=='shop')clearShopPreview();}
 function showLobby(){for(const id of ['locker','shop','settings','mapSelect','online'])$(id).classList.add('hide');$('menu').classList.remove('hide');setLobbyTab('play');lockerEmote='';}
 function renderLocker(){for(const [key,items] of [['skin',SKINS],['pick',PICKS],['emote',EMOTIONS],['phrase',PHRASES]]){const el=$(key+'Choices');el.replaceChildren();items.forEach((item,i)=>{const [icon,color,rarity]=lockerMeta[key][i];const owned=isOwned(key,i);const button=document.createElement('button');button.type='button';button.className='locker-item'+(owned?'':' locked');button.style.setProperty('--rarity',color);button.setAttribute('aria-pressed',String(settings[key]===i&&owned));button.innerHTML='<span class="item-icon"><svg viewBox="0 0 48 48" aria-hidden="true">'+lockerIcons[icon]+'</svg></span><span class="item-copy"><strong></strong><small>'+rarity+'</small></span>'+(owned?'<span class="item-check" aria-hidden="true">✓</span>':'<span class="item-lock">В МАГАЗИНЕ · '+(item.price||500)+' Э</span>');button.querySelector('strong').textContent=item.name;button.onclick=()=>{if(!owned){shopSel={kind:'item',key,idx:i};openShop();feed('Предмет «'+item.name+'» доступен в Магазине');return;}settings[key]=i;save('fb_settings',settings);if(key==='pick')buildVM();if(key==='emote'){lockerEmote=EMOTIONS[i].action;lockerEmoteUntil=time+3.5;}if(key==='phrase'){if(i===1)phraseSound();else if(i===2)endervasiSound();else if(i===3)tenantSound();}renderLocker();};el.append(button);});}}
 function bundleStatus(b){const allOwned=b.items.every(([k,i])=>isOwned(k,i));const someOwned=b.items.some(([k,i])=>isOwned(k,i));const remPrice=allOwned?0:someOwned?Math.max(200,Math.round(b.price*b.items.filter(([k,i])=>!isOwned(k,i)).length/b.items.length)):b.price;return{allOwned,remPrice};}
@@ -1478,9 +1487,9 @@ $('lobbyPlay').onclick=showLobby;$('randomNick').onclick=()=>{const first=['Ту
 $('bSolo').onclick=()=>{$('menu').classList.add('hide');$('mapSelect').classList.remove('hide')};
 $('bMapBack').onclick=()=>{$('mapSelect').classList.add('hide');$('menu').classList.remove('hide')};
 let selectedSolo='training';function selectSolo(map){selectedSolo=map;document.querySelectorAll('[data-map]').forEach(e=>e.setAttribute('aria-pressed',String(e.dataset.map===map)));}for(const el of document.querySelectorAll('[data-map]'))el.onclick=()=>selectSolo(el.dataset.map);selectSolo('training');$('startSolo').onclick=()=>{initWorld(selectedSolo);respawn();play();};for(const el of document.querySelectorAll('[data-room-mode]'))el.onclick=()=>{$('onlineMode').value=el.dataset.roomMode;document.querySelectorAll('[data-room-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b===el)));};
-$('bResetCourse').onclick=()=>resetCourse();$('bResume').onclick=()=>{$('pauseH').textContent='Пауза';play()};
-$('bMenu').onclick=$('bMenu2').onclick=()=>{if(Net.online)Net.leave('Ты вышел из матча');respawn();setMode('menu')};
-$('bRespawn').onclick=()=>{if(currentMap==='zombies'&&!Net.online)initWorld('zombies');respawn();play()};
+$('bResetCourse').onclick=()=>resetCourse();$('bResume').onclick=()=>{if(Net.ranked&&Net.rankPhase==='preparing')Net.conn.ready();$('pauseH').textContent=Net.ranked?'Рейтинговый матч продолжается':'Пауза';play()};
+$('bMenu').onclick=$('bMenu2').onclick=()=>{if(Net.ranked){window.YosypRanked.forfeit();return}if(Net.online)Net.leave('Ты вышел из матча');respawn();setMode('menu')};
+$('bRespawn').onclick=()=>{if(Net.ranked)return;if(currentMap==='zombies'&&!Net.online)initWorld('zombies');respawn();play()};
 function openSettings(){prevScreen=mode;if(mode==='menu'){for(const id of ['locker','shop','mapSelect','online'])$(id).classList.add('hide');setLobbyTab('settings');}$(mode).classList.add('hide');$('settings').classList.remove('hide');$('settingsNotice').textContent='';syncSettings();}
 $('bSet1').onclick=$('bSet2').onclick=openSettings;
 $('bBack').onclick=()=>{bindWait=null;renderBinds();$('settings').classList.add('hide');$(prevScreen).classList.remove('hide');if(prevScreen==='menu')setLobbyTab('play');};
@@ -1498,7 +1507,7 @@ syncSettings();
 // ================= Ввод =================
 document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===cv;skipMv=2;mvHist=[];if(locked)lockFail=false;if(!locked&&mode=='play'&&!CFN.ui&&!touchController?.enabled)setMode('pause')});
 function onPress(a){
- if(me.emoteT>0)return;
+ if(me.emoteT>0||(Net.ranked&&Net.rankPhase!=='playing'))return;
  const SL={s1:'ar',s2:'sg',s3:'pick',s4:'med',s5:'pot',wall:'w',floor:'f',ramp:'r',cone:'k'};
  if(SL[a])setSlot(SL[a]);
  if(a=='fire')firePressed=true;
@@ -1679,6 +1688,7 @@ function createTouchController(){
 // ================= Цикл =================
 let last=performance.now(),time=0,fpsA=60,buildCd=0;
 function update(dt){
+ if(Net.ranked&&Net.rankPhase!=='playing'){for(const a in held)held[a]=false;firePressed=false;pendX=pendY=0;touchController?.reset();return;}
  {const s=.0022*settings.sens;me.yaw-=pendX*s;me.pitch=Math.max(-1.5,Math.min(1.5,me.pitch-pendY*s*(settings.invertY?-1:1)));pendX=pendY=0;camInfo=computeCam();if(!(me.emoteT>0))CFN.aim(dt);if(!isFinite(me.yaw))me.yaw=0;if(!isFinite(me.pitch))me.pitch=0}
  // Emotes holster equipment and lock gameplay, while camera input stays active above.
  if(me.emoteT>0){
@@ -1700,7 +1710,7 @@ function update(dt){
  const g=supportAt(nx,nz,Math.max(me.y,ny),.7),wasAir=!me.onGround,impact=-me.vy;
  if(ny<=g.h||(me.onGround&&me.vy<=0&&ny-g.h<.9)){ny=g.h;if(wasAir&&impact>8)SFX.play('land',null,Math.min(1,impact/25));if(wasAir&&impact>22)damagePlayer(Math.round((impact-22)*10),'падение с высоты',true);me.vy=0;me.onGround=true;me.sup=g.s}else{me.onGround=false;me.sup=null}
  if(liftT>0){liftT-=dt;const g2=supportAt(nx,nz,ny,HEAD-.2);if(g2.h>ny+.05){ny=g2.h;me.vy=Math.max(0,me.vy);me.onGround=true;me.sup=g2.s}}
- me.x=nx;me.z=nz;me.y=ny;if(mode!='play')return;
+ if(Net.ranked){nx=Math.max(-95.8,Math.min(95.8,nx));nz=Math.max(-95.8,Math.min(95.8,nz));}me.x=nx;me.z=nz;me.y=ny;if(mode!='play')return;
  bob+=moving&&me.onGround?dt*(me.spr?13:me.cr?7:10):0;{const sn=Math.floor(bob/Math.PI);if(sn!=stepN){stepN=sn;SFX.play('step',null,.6)}}
  cd-=dt;switchT=Math.max(0,switchT-dt);vmKick=Math.max(0,vmKick-dt*8);swing=Math.max(0,swing-dt*3.5);
  if(reloadT>0){reloadT-=dt;if(reloadT<=0){reloadT=0;ammo[slot]=W[slot].mag}}
@@ -1710,8 +1720,8 @@ function update(dt){
    if(editP.t=='r'){if(firePressed)editPath=[];if((inputHeld('fire')||firePressed)&&editHover>=0&&!editPath.includes(editHover)){editPath.push(editHover);editChanged=true}}
    else if((inputHeld('fire')||firePressed)&&editHover>=0){const on=editMask>>editHover&1;if(editPaint===null)editPaint=on?0:1;if(on!=editPaint){editMask^=1<<editHover;editChanged=true;SFX.play('tile',null,.5)}}}}
  else if(isBuild(slot)){buildCd-=dt;if((inputHeld('fire')||firePressed)&&buildCd<=0){const tp=target();if(canPlace(tp)&&dispatch({type:'build',p:Object.assign(tp,{own:Net.me})}))buildCd=.06}}
- else if(W[slot].heal){const w=W[slot];if(firePressed&&castT<=0){const full=w.heal=='hp'?me.hp>=100:me.sh>=100;if(!full)castT=w.cast}
-  if(castT>0){castT-=dt;if(castT<=0){castT=0;SFX.play('heal');if(w.heal=='hp')me.hp=Math.min(100,me.hp+w.amount);else me.sh=Math.min(100,me.sh+w.amount);updateVitals()}}}
+ else if(W[slot].heal){const w=W[slot];if(firePressed&&castT<=0){const full=w.heal=='hp'?me.hp>=100:me.sh>=100;if(!full){castT=w.cast;if(Net.ranked){Net.msg({t:'st',s:myState()});Net.msg({t:'heal',s:slot})}}}
+  if(castT>0){castT-=dt;if(castT<=0){castT=0;SFX.play('heal');if(!Net.ranked){if(w.heal=='hp')me.hp=Math.min(100,me.hp+w.amount);else me.sh=Math.min(100,me.sh+w.amount);}updateVitals()}}}
  else if(cd<=0&&switchT<=0&&((W[slot].auto?(inputHeld('fire')||firePressed):firePressed)||CFN.trig))fire();
  firePressed=false;touchController?.afterUpdate();}
 function drawChar(st,M,e,vb,vn){const ch=[];const hand=charGeo(ch,st);drawArr(ch,1);
@@ -1784,7 +1794,7 @@ function hud(M,dt){CFN.hud(M);const W2=innerWidth,H2=innerHeight;const proj=v=>{
  const cs=$('cast');if(castT>0){cs.classList.remove('hide');cs.querySelector('span').textContent=W[slot].name+'…';cs.querySelector('i').style.width=(100*(1-castT/W[slot].cast))+'%'}else cs.classList.add('hide');
  const am=$('ammo');if(slot=='ar'||slot=='sg'){am.querySelector('b').innerHTML='<span class="ammo-current">'+ammo[slot]+'</span><small> / '+W[slot].mag+'</small>'; am.querySelector('div').textContent=reloadT>0?'Перезарядка…':W[slot].name}
  else if(isBuild(slot)){am.querySelector('b').textContent=MATS[mat].n;am.querySelector('div').textContent=MATS[mat].hp+' прочности'}else{am.querySelector('b').textContent='';am.querySelector('div').textContent=W[slot].name}
- $('info').textContent=(settings.nick||'Игрок')+(Net.online?' · Онлайн · пинг '+Net.ping+' мс':'')+' · Построек: '+pieces.size+(settings.showFps?' · FPS: '+Math.round(fpsA):'')}
+ $('info').textContent=(settings.nick||'Игрок')+(Net.online?' · Сервер '+Net.ping+' мс'+(!Net.ranked?' · До игрока '+Net.peerPing+' мс':''):'')+' · Построек: '+pieces.size+(settings.showFps?' · FPS: '+Math.round(fpsA):'')}
 function tickBuildings(dt){for(const p of building){if(pieces.get(keyOf(p))!==p){building.delete(p);continue}const old=p.bt,T=MATS[p.mat].bt;p.bt=Math.min(1,old+Math.max(0,dt)/T);p.hp=Math.min(p.maxhp,p.hp+p.maxhp*.8*(p.bt-old));
  p.spawnT=(p.spawnT||0)-Math.min(dt,.1);while(p.spawnT<=0){p.spawnT+=.08;spawnFrag(p)}if(p.bt>=1){building.delete(p);dirty=true}}}
 function frame(now){const elapsed=Math.max(0,(now-last)/1000),dt=Math.min(.05,elapsed);last=now;time+=dt;fpsA=fpsA*.95+(1/Math.max(dt,1e-3))*.05;
@@ -1883,7 +1893,7 @@ const CFN=(()=>{
  function pick(o,f){let best=null,bs=1e9;const lim=(isFinite(cfg.aimFov)?cfg.aimFov:8)*Math.PI/180;
   for(const t of targets()){const p=aimPt(t,o,f);if(!p)continue;const d=sub(p,o),L=Math.hypot(...d),ang=Math.acos(Math.max(-1,Math.min(1,dot(d,f)/L)));if(ang>lim)continue;
    const sc=cfg.prio=='fov'?ang:cfg.prio=='dist'?L:t.hp+t.sh+ang;if(sc<bs){bs=sc;best={t,p}}}return best}
- const armed=()=>(slot=='ar'||slot=='sg')&&!editP&&mode=='play';
+ const armed=()=>!Net.ranked&&(slot=='ar'||slot=='sg')&&!editP&&mode=='play';
  const keyOn=()=>cfg.aimKey=='always'||!!keys[cfg.aimKey];
  C.aim=dt=>{C.trig=false;C.cur=null;
   if(rp.st&&lastSt&&dt>0){const k=Math.min(1,dt*8);vel=vel.map((v,i)=>v+(([rp.st.x,rp.st.y,rp.st.z][i]-lastSt[i])/dt-v)*k)}if(rp.st)lastSt=[rp.st.x,rp.st.y,rp.st.z];
@@ -1895,9 +1905,9 @@ const CFN=(()=>{
     me.yaw=y0+dy*k;me.pitch=Math.max(-1.5,Math.min(1.5,p0+(pt-p0)*k));if(!isFinite(me.yaw)||!isFinite(me.pitch)){me.yaw=y0;me.pitch=p0}camInfo=computeCam()}}
   if(cfg.trig&&(!cfg.trigKeyOnly||keyOn())){const ar=aimRay(),h=raycast(ar.o,ar.d,W[slot].range||90);if(h&&(h.kind=='player'||h.kind=='dummy')){trigT+=dt*1000;if(trigT>=cfg.trigDelay)C.trig=true}else trigT=0}else trigT=0};
  C.silentRay=AR=>{if(!cfg.aim||!cfg.silent||!keyOn()||!armed())return AR;const ci=computeCam(),tg=pick(ci.e,ci.f);if(!tg)return AR;C.cur=tg;return{o:AR.o,d:norm(sub(tg.p,AR.o))}};
- C.spread=()=>cfg.nospread?0:1;
+ C.spread=()=>!Net.ranked&&cfg.nospread?0:1;
  // --- чамсы ---
- C.chams=M=>{if(!cfg.chams||mode=='menu')return;const arr=[];
+ C.chams=M=>{if(Net.ranked||!cfg.chams||mode=='menu')return;const arr=[];
   for(const t of targets()){if(t.kind=='player')charGeo(arr,t.st);else{addHex(arr,boxC(...t.b[0]),[1,1,1]);addHex(arr,boxC(...t.b[1]),[1,1,1])}}
   if(!arr.length)return;const al=cfg.chAlpha*(cfg.chPulse?.65+.35*Math.sin(time*6):1);
   const paint=c=>{const a2=arr.slice();for(let i=0;i<a2.length;i+=11){a2[i+6]=c[0]*1.5;a2[i+7]=c[1]*1.5;a2[i+8]=c[2]*1.5}return a2};
@@ -1905,7 +1915,7 @@ const CFN=(()=>{
   if(cfg.chVisOn){gl.depthFunc(gl.LEQUAL);drawArr(paint(hexC(cfg.chVis)),Math.min(1,al+.2))}
   gl.depthFunc(gl.LESS);gl.depthMask(true)};
  // --- ESP / HUD ---
- C.hud=M=>{const W2=innerWidth,H2=innerHeight;if(cv2.width!=W2||cv2.height!=H2){cv2.width=W2;cv2.height=H2}g2.clearRect(0,0,W2,H2);if(mode=='menu'||mode=='dead')return;
+ C.hud=M=>{const W2=innerWidth,H2=innerHeight;if(cv2.width!=W2||cv2.height!=H2){cv2.width=W2;cv2.height=H2}g2.clearRect(0,0,W2,H2);if(Net.ranked||mode=='menu'||mode=='dead')return;
   const proj=v=>{const c=xform(M,v);if(c[3]<=.1)return null;return[(c[0]/c[3]*.5+.5)*W2,(1-(c[1]/c[3]*.5+.5))*H2]};
   if(cfg.watermark&&(cfg.aim||cfg.esp||cfg.chams||cfg.trig)){g2.font='bold 12px system-ui';g2.fillStyle='rgba(255,160,90,.8)';g2.fillText('FN',W2-26,H2-8)}
   const ci=camInfo,e=ci.e,f=ci.f;
@@ -1939,6 +1949,38 @@ const CFN=(()=>{
 touchController=createTouchController();touchController.configure();syncSettings();
 window.__fb={Z,zombieTick,startWave,spawnZombie,zombieBoxes,applyZombieHit,applyZombieState,wallAlpha,toggleEmotes,chooseEmote,playEmote,EMOTIONS,PHRASES,initWorld,resetCourse,trainingSpecs,get currentMap(){return currentMap},SKINS,PICKS,SHOP_ITEMS,SHOP_BUNDLES,vmGeo,vmFor,renderLocker,renderShop,openShop,shotRay,building,frags,CFN,bodyHit,bodyPen,supportAt,ceilingAt,coneParts,tickBuildings,MATS,materialBands,connKeys,SFX,canPlace,collapseCheck,coneHt,Net,rp,netHandle,startMatch,tracers,get myState(){return myState()},get camInfo(){return camInfo},aimRay,computeCam,charGeo,get pend(){return[pendX,pendY]},rampFromPath,finalize,me,pieces,dispatch,update,codeDown,codeUp,held,get settings(){return settings},setSlot,setMode,raycast,startEdit,confirmEdit,get editP(){return editP},set editMask(v){editMask=v},dummies,fire,W,ammo,get mode(){return mode},target};
 
+window.GameRankedBridge={
+ search(){Net.reset();$('hostBox').classList.add('hide');$('menu').classList.add('hide');$('online').classList.remove('hide');Net.status('');},
+ notice(t){feed(t);$('menuMsg').textContent=t;},
+ prepare(connection,match){
+  Net.reset();Net.conn=connection;Net.online=true;Net.ranked=true;Net.host=match.host;Net.me=match.host?'h':'g';Net.rankId=match.id;Net.rankPhase='preparing';Net.rankRound=0;Net.lastRx=performance.now();Net.score={me:0,op:0};Net.ping=Net.peerPing=0;
+  rp.nick=match.opponent.nick;rp.vis=false;rp.dead=false;rp.st=rp.tgt=null;
+  connection.on('data',m=>{if(Net.conn!==connection)return;Net.lastRx=performance.now();netHandle(m)});
+  document.body.classList.add('ranked-play');initWorld('ranked');respawn();setSlot('ar');updScore();
+  $('online').classList.add('hide');$('menuMsg').textContent='';setMode('pause');
+  $('pauseH').textContent=rp.nick+' · '+match.opponent.pts+' ПТС · до 5 побед';$('bResume').textContent='ГОТОВ К ДУЭЛИ';$('rankedHud').classList.remove('hide');
+ },
+ state(m){
+  if(!Net.ranked||m.id!==Net.rankId)return;
+  const previousPhase=Net.rankPhase;Net.lastRx=performance.now();Net.rankPhase=m.phase;
+  if(m.round>0&&m.round!==Net.rankRound){Net.rankRound=m.round;initWorld('ranked');respawn();setSlot('ar');cd=0;castT=reloadT=0;rp.vis=false;rp.dead=false;rp.st=rp.tgt=null;for(const a in held)held[a]=false;firePressed=false;touchController?.reset();}
+  const oldHealth=me.hp+me.sh;me.hp=m.health.hp;me.sh=m.health.sh;rp.hp=m.opponentHealth.hp;rp.sh=m.opponentHealth.sh;rp.dead=rp.hp<=0;updateVitals();
+  if(me.hp+me.sh<oldHealth){SFX.play('hurt');const vign=$('vign');vign.style.transition='none';vign.style.opacity=1;requestAnimationFrame(()=>{vign.style.transition='opacity .6s';vign.style.opacity=0});}
+  Net.score={me:m.score[0],op:m.score[1]};updScore();
+  const seconds=Math.ceil(m.remaining/1000),clock=Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');
+  if(m.phase==='preparing'){$('rankedStateLabel').textContent=m.ready[0]?'ОЖИДАЕМ СОПЕРНИКА':'ПОДТВЕРДИ ГОТОВНОСТЬ';$('rankedStateDetail').textContent='Подготовка · '+seconds+' с';}
+  else if(m.phase==='countdown'){$('rankedStateLabel').textContent='РАУНД '+m.round+' ЧЕРЕЗ '+seconds;$('rankedStateDetail').textContent='100 здоровья · 100 щита · до 5 побед';}
+  else if(m.phase==='playing'){$('rankedStateLabel').textContent='РАУНД '+m.round+' · '+clock;$('rankedStateDetail').textContent='До 5 побед · выход из матча — поражение';}
+  else if(m.phase==='between'){
+   const text=m.roundResult==='win'?'РАУНД ТВОЙ':m.roundResult==='loss'?'РАУНД СОПЕРНИКА':'НИЧЬЯ В РАУНДЕ';$('rankedStateLabel').textContent=text;$('rankedStateDetail').textContent='Следующий раунд через '+seconds+' с';
+   if(previousPhase!=='between'){feed(text);SFX.play(m.roundResult==='win'?'kill':'death');if(editP)cancelEdit();castT=reloadT=0;for(const a in held)held[a]=false;firePressed=false;touchController?.reset();}
+  }
+  if(m.phase!=='preparing')$('bResume').textContent='ПРОДОЛЖИТЬ';
+ },
+ correct(position){if(Net.ranked&&Array.isArray(position)&&position.length===3&&position.every(Number.isFinite)){[me.x,me.y,me.z]=position;me.vy=0;}},
+ hit(m){if(!Net.ranked)return;hitMarker(m.head);if(rp.st)dmgNum([rp.st.x,rp.st.y+1.8,rp.st.z],String(m.amount),m.head?'hd':'');},
+ finish(){Net.reset();document.body.classList.remove('ranked-play');$('rankedHud').classList.add('hide');$('bResume').textContent='ПРОДОЛЖИТЬ';$('online').classList.add('hide');initWorld('freebuild');respawn();setMode('menu');}
+};
 window.GameAccountBridge={
  pause(){if(mode==='play')setMode('pause');},playing(){return mode==='play';},notify:feed,
  snapshot(){return JSON.parse(JSON.stringify(settings));},
@@ -1947,4 +1989,4 @@ window.GameAccountBridge={
  apply(p){for(const k of ['vbucks','owned','skin','pick','emote','phrase','nick'])if(p[k]!==undefined)settings[k]=JSON.parse(JSON.stringify(p[k]));document.getElementById('nick').value=settings.nick||'';syncVbucks();buildVM();if(!$('locker').classList.contains('hide'))renderLocker();if(!$('shop').classList.contains('hide'))renderShop();}
 };
 requestAnimationFrame(frame);
-</script><script type="module" src="client/account.js"></script></body></html>
+</script><script src="client/ranked.js"></script><script type="module" src="client/account.js"></script></body></html>

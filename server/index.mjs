@@ -39,8 +39,8 @@ export function createApp(options = {}) {
         if (origin && !origins.has(origin)) fail('Этот адрес сайта не разрешён.', 403);
         if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS'); res.setHeader('Access-Control-Allow-Headers', 'Authorization,Content-Type'); res.writeHead(204); res.end(); return; }
         limit('ip:' + ipOf(req), 240);
-        if (req.method === 'GET' && url.pathname === '/api/health') return json(res, 200, { ok: true, version: '4.0a', authReady: !!config.projectId });
-        if (req.method === 'GET' && url.pathname === '/api/config') return json(res, 200, { firebase: config, version: '4.0a', startingBalance: 2000 });
+        if (req.method === 'GET' && url.pathname === '/api/health') return json(res, 200, { ok: true, version: '4.1', authReady: !!config.projectId });
+        if (req.method === 'GET' && url.pathname === '/api/config') return json(res, 200, { firebase: config, version: '4.1', startingBalance: 2000, ranked: { startingPts: 1000, target: 5 } });
         if (!['GET', 'POST'].includes(req.method)) fail('Метод не поддерживается.', 405);
         const token = /^Bearer ([^\s]+)$/.exec(req.headers.authorization || '')?.[1];
         if (!token) fail('Войди в аккаунт.', 401);
@@ -49,6 +49,7 @@ export function createApp(options = {}) {
         limit('uid:' + user.uid, 180);
         store.get(user.uid, user.nick);
         if (req.method === 'GET' && url.pathname === '/api/profile') return json(res, 200, store.get(user.uid));
+        if (req.method === 'GET' && url.pathname === '/api/ranked') return json(res, 200, store.rating(user.uid));
         if (req.method !== 'POST') fail('Не найдено.', 404);
         if (!(req.headers['content-type'] || '').startsWith('application/json')) fail('Требуется JSON.', 415);
         let bytes = 0, chunks = [];
@@ -71,10 +72,10 @@ export function createApp(options = {}) {
       res.end(req.method === 'HEAD' ? undefined : await readFile(absolute));
     } catch (e) { if (!res.headersSent) json(res, e.status || (e.code === 'ENOENT' ? 404 : 500), { error: e.status ? e.message : 'Не удалось выполнить запрос.' }); else res.end(); }
   });
-  const rooms = attachRooms(server, { origins, ipOf });
-  return { server, store, close: async () => { clearInterval(cleanup); rooms.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); store.close(); } };
+  const rooms = attachRooms(server, { origins, ipOf, store, verify, rankedOptions: options.ranked });
+  return { server, store, ranked: rooms.ranked, close: async () => { clearInterval(cleanup); rooms.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); store.close(); } };
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const app = createApp(); app.server.listen(Number(process.env.PORT || 3100), process.env.HOST || '127.0.0.1', () => console.log('Yosypnite 4.0a ready'));
+  const app = createApp(); app.server.listen(Number(process.env.PORT || 3100), process.env.HOST || '127.0.0.1', () => console.log('Yosypnite 4.1 ready'));
   for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, async () => { await app.close(); process.exit(0); });
 }
