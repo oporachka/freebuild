@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Йосыпнайт 3.0</title><meta name="application-name" content="Йосыпнайт"><meta name="version" content="3.0">
+<title>Йосыпнайт 4.0</title><meta name="application-name" content="Йосыпнайт"><meta name="version" content="4.0">
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#24162e;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;user-select:none;color:#fff}
 canvas{display:block;width:100%;height:100%}
@@ -341,7 +341,7 @@ body.touch-playing #touchControls{display:block}
 .touch-ui:not(.touch-playing) #bar{visibility:hidden}
 .touch-setting{display:block}.touch-setting label{display:block;margin-bottom:10px}.touch-setting small{display:block;margin-top:8px;font-size:11px;color:#bdd7ec;line-height:1.4}#touchMode{width:100%;min-height:44px;padding:8px;border:1px solid #769bbf7a;border-radius:6px;background:#13283f;color:white;font:14px system-ui}
 
-</style></head><body>
+</style><link rel="stylesheet" href="client/account.css"></head><body>
 <canvas id="c"></canvas>
 <div id="touchControls" aria-label="Сенсорное управление">
   <div class="touch-topbar">
@@ -389,14 +389,14 @@ body.touch-playing #touchControls{display:block}
 <div id="dyn"></div><div id="score" class="hide"></div><div id="feed"></div>
 
 <div id="lobbyChrome"> <nav class="lobby-nav" aria-label="Главное меню"><button class="lobby-tab active" id="lobbyPlay">ИГРАТЬ</button><button class="lobby-tab" id="bLocker">ШКАФЧИК</button><button class="lobby-tab" id="bShop">МАГАЗИН</button><button class="lobby-tab" id="bSet1">НАСТРОЙКИ</button></nav>
- <div class="lobby-RightGroup"><div class="vbucks-pill" title="Баланс Эндер-баксов"><span class="vbucks-coin" aria-hidden="true">Э</span><div class="vbucks-info"><small>ЭНДЕР-БАКСЫ</small><b id="vbucksCount">2 000</b></div></div><div class="lobby-profile"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="17" r="8"/><path d="M8 43v-5a16 16 0 0 1 32 0v5"/></svg><div><label for="nick">ИМЯ ИГРОКА</label><input type="text" id="nick" maxlength="16" placeholder="Твой ник" autocomplete="off"></div><button id="randomNick" title="Случайный ник" aria-label="Случайный ник"><svg viewBox="0 0 32 32"><rect x="4" y="4" width="24" height="24" rx="5"/><circle cx="10" cy="10" r="1.6"/><circle cx="22" cy="10" r="1.6"/><circle cx="16" cy="16" r="1.6"/><circle cx="10" cy="22" r="1.6"/><circle cx="22" cy="22" r="1.6"/></svg></button></div></div>
+ <div class="lobby-RightGroup"><div class="vbucks-pill" title="Баланс Эндер-баксов"><span class="vbucks-coin" aria-hidden="true">Э</span><div class="vbucks-info"><small>ЭНДЕР-БАКСЫ</small><b id="vbucksCount">2 000</b></div></div><div class="lobby-profile"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="17" r="8"/><path d="M8 43v-5a16 16 0 0 1 32 0v5"/></svg><div><label for="nick">ИМЯ ИГРОКА</label><input type="text" id="nick" maxlength="16" placeholder="Твой ник" autocomplete="off"></div><button id="randomNick" title="Случайный ник" aria-label="Случайный ник"><svg viewBox="0 0 32 32"><rect x="4" y="4" width="24" height="24" rx="5"/><circle cx="10" cy="10" r="1.6"/><circle cx="22" cy="10" r="1.6"/><circle cx="16" cy="16" r="1.6"/><circle cx="10" cy="22" r="1.6"/><circle cx="22" cy="22" r="1.6"/></svg></button><button id="accountButton" type="button">ВОЙТИ</button></div></div>
 </div>
 <div class="screen" id="menu">
  <main class="lobby-column"><div class="lobby-season">ТВОЯ ПЛОЩАДКА. ТВОИ ПРАВИЛА.</div><h1 class="title">ЙОСЫПНАЙТ</h1><p class="lobby-slogan">СТРОЙ · РЕДАКТИРУЙ · ЛОМАЙ</p>
  <div class="lobby-modes"><button class="btn lobby-mode online-mode" id="bOnline"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="m11 5 29 29-6 6L5 11V5h6ZM37 5 26 16m-8 10L7 37m21-4 12 12M33 28l12 12M5 35l8 8"/></svg><span><b>В БОЙ / ОНЛАЙН</b><small>Сражение с игроками и ботами</small></span><i>↗</i></button>
  <button class="btn lobby-mode solo-mode" id="bSolo"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 10h36v29H6zM6 24h36M18 10v14m12 0v15M6 39v4m36-4v4"/></svg><span><b>ФРИБИЛД <em>(ОДИНОЧНАЯ)</em></b><small>Строй, редактируй, тренируйся без лимитов</small></span><i>↗</i></button></div>
  <p class="lobby-note">Бесконечные материалы. Полная свобода.</p><p id="menuMsg" role="status"></p>
- <aside class="lobby-news"><span>ОБНОВЛЕНИЕ v3.0</span><strong>Играй с телефона.<br>Собери свой стиль.</strong><small>Эндер-баксы, магазин и новые образы.</small></aside></main>
+ <aside class="lobby-news"><span>ОБНОВЛЕНИЕ v4.0</span><strong>Один аккаунт.<br>Твой мир с друзьями.</strong><small>Почта и Google · облачный шкафчик · серверные комнаты.</small></aside></main>
  <div class="lobby-scene-label"><span>FREEBUILD / CREATIVE</span><b>Следующая победа<br>начинается с тебя.</b></div><footer class="lobby-footer">WASD — движение <span>·</span> B — эмоции <span>·</span> N — колесо чата</footer>
 </div>
 
@@ -410,7 +410,7 @@ body.touch-playing #touchControls{display:block}
  <footer class="locker-actions"><button class="btn" id="lockerBack">СОХРАНИТЬ И ВЕРНУТЬСЯ <span>↗</span></button><p>Изменения сохраняются автоматически.<br>Хитбокс не меняется.</p></footer>
 </div></div>
 <div class="screen hide" id="shop"><div class="shop-hud">
- <header class="locker-heading"><div class="shop-top"><div><span>КОСМЕТИКА · СЕЗОН 3</span><h1>МАГАЗИН</h1></div><div class="shop-timer">ВЕРСИЯ 3.0</div></div><p>ПРИМЕРЯЙ НА ПЕРСОНАЖЕ СПРАВА · ПОКУПКИ СОХРАНЯЮТСЯ В ШКАФЧИКЕ</p></header>
+ <header class="locker-heading"><div class="shop-top"><div><span>КОСМЕТИКА · СЕЗОН 4</span><h1>МАГАЗИН</h1></div><div class="shop-timer">ВЕРСИЯ 4.0</div></div><p>ПРИМЕРЯЙ НА ПЕРСОНАЖЕ СПРАВА · ПОКУПКИ СОХРАНЯЮТСЯ В ШКАФЧИКЕ</p></header>
  <div class="tabs" role="tablist" aria-label="Категории магазина">
   <button type="button" class="tab on" data-shop-tab="all">ВСЕ</button>
   <button type="button" class="tab" data-shop-tab="bundle">НАБОРЫ</button>
@@ -434,7 +434,7 @@ body.touch-playing #touchControls{display:block}
  </footer>
 </div></div>
 
-<div class="screen hide side-screen" id="online"><div class="mode-hud"><header class="settings-heading"><span>ИГРАЙ ВМЕСТЕ</span><h1>ОНЛАЙН</h1><p>СОЗДАЙ КОМНАТУ ИЛИ ПРИСОЕДИНИСЬ К ДРУГУ</p></header><div class="mode-scroll"><div class="online-tiles" role="group" aria-label="Режим комнаты"><button data-room-mode="freebuild" aria-pressed="true"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 8h36v32H6zM6 24h36M18 8v16m12 0v16"/></svg><b>1 НА 1</b><small>FREEBUILD</small></button><button data-room-mode="zombies" aria-pressed="false"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 30C-1 6 48-1 38 29l-5 5v9H16v-9zM19 35v7m7-7v7"/><circle cx="17" cy="22" r="4"/><circle cx="31" cy="22" r="4"/><path d="m22 29 2-4 3 4"/></svg><b>ЗОМБИ</b><small>ВЫЖИВАНИЕ ВДВОЁМ</small></button></div><input type="hidden" id="onlineMode" value="freebuild"><button class="btn sport-primary" id="bHost">СОЗДАТЬ КОМНАТУ <span>＋</span></button><div id="hostBox" class="hide room-code"><small>ТВОЙ КОД КОМНАТЫ</small><div id="roomCode">-----</div><button class="btn sport-secondary" id="bCopy">СКОПИРОВАТЬ КОД</button></div><div class="join-block"><label for="joinCode">КОД ДРУГА</label><input type="text" id="joinCode" maxlength="5" placeholder="XXXXX" autocomplete="off" spellcheck="false"><button class="btn sport-blue" id="bJoin">ВОЙТИ В КОМНАТУ <span>↗</span></button></div><p id="netStatus" role="status"></p><p class="online-help">Отправь другу код. Оба игрока должны открыть одну версию игры. Режим выбирает создатель комнаты.</p></div><footer class="mode-footer"><button class="btn sport-secondary" id="bOnBack">НАЗАД</button></footer></div></div>
+<div class="screen hide side-screen" id="online"><div class="mode-hud"><header class="settings-heading"><span>ИГРАЙ ВМЕСТЕ</span><h1>ОНЛАЙН</h1><p>СОЗДАЙ КОМНАТУ ИЛИ ПРИСОЕДИНИСЬ К ДРУГУ</p></header><div class="mode-scroll"><div class="online-tiles" role="group" aria-label="Режим комнаты"><button data-room-mode="freebuild" aria-pressed="true"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 8h36v32H6zM6 24h36M18 8v16m12 0v16"/></svg><b>1 НА 1</b><small>FREEBUILD</small></button><button data-room-mode="zombies" aria-pressed="false"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 30C-1 6 48-1 38 29l-5 5v9H16v-9zM19 35v7m7-7v7"/><circle cx="17" cy="22" r="4"/><circle cx="31" cy="22" r="4"/><path d="m22 29 2-4 3 4"/></svg><b>ЗОМБИ</b><small>ВЫЖИВАНИЕ ВДВОЁМ</small></button></div><input type="hidden" id="onlineMode" value="freebuild"><button class="btn sport-primary" id="bHost">СОЗДАТЬ КОМНАТУ <span>＋</span></button><div id="hostBox" class="hide room-code"><small>ТВОЙ КОД КОМНАТЫ</small><div id="roomCode">-----</div><button class="btn sport-secondary" id="bCopy">СКОПИРОВАТЬ КОД</button></div><div class="join-block"><label for="joinCode">КОД ДРУГА</label><input type="text" id="joinCode" maxlength="6" placeholder="XXXXX" autocomplete="off" spellcheck="false"><button class="btn sport-blue" id="bJoin">ВОЙТИ В КОМНАТУ <span>↗</span></button></div><p id="netStatus" role="status"></p><p class="online-help">Отправь другу код. Оба игрока должны открыть одну версию игры. Режим выбирает создатель комнаты.</p></div><footer class="mode-footer"><button class="btn sport-secondary" id="bOnBack">НАЗАД</button></footer></div></div>
 <div class="screen hide" id="pause"><div class="panel">
  <h2 id="pauseH">Пауза</h2>
  <button class="btn sport-primary" id="bResume">ПРОДОЛЖИТЬ <svg viewBox="0 0 48 48" aria-hidden="true"><path d="m16 7 25 17-25 17z"/></svg></button>
@@ -451,6 +451,21 @@ body.touch-playing #touchControls{display:block}
  <button class="btn" id="bMenu2">Главное меню</button>
 </div></div>
 
+
+<dialog id="accountDialog" aria-labelledby="accountTitle">
+ <button id="accountClose" class="close" type="button" aria-label="Закрыть">×</button>
+ <span class="eyebrow">ЙОСЫПНАЙТ · 4.0</span><h2 id="accountTitle">Твой аккаунт</h2>
+ <p>Один шкафчик и баланс на ПК и телефоне.</p>
+ <div id="accountFormSection"><button id="accountGoogle" class="google" type="button">Продолжить с Google</button><div class="divider">ИЛИ ПО ПОЧТЕ</div>
+ <form id="accountForm"><label>Почта<input id="accountEmail" type="email" autocomplete="email" required maxlength="254"></label><label>Пароль<input id="accountPassword" type="password" autocomplete="current-password" minlength="8" required maxlength="128"></label><button class="primary" type="submit">Войти</button></form>
+ <div class="row"><button id="accountRegister" type="button">Создать аккаунт</button><button id="accountReset" type="button">Забыл пароль</button></div></div>
+ <div id="accountUserSection" hidden><p id="accountIdentity"></p>
+ <div id="accountVerification" hidden><div class="row"><button id="accountVerify" type="button">Я подтвердил почту</button><button id="accountResend" type="button">Отправить письмо ещё раз</button></div></div>
+ <div id="accountMigration" hidden><p>Перенеси покупки из этого браузера один раз. Старый баланс не переносится. Новый аккаунт получает 2 000 Эндер-баксов.</p><button id="accountMigrate" class="primary" type="button">Перенести мои покупки</button></div>
+ <div class="row"><button id="accountRefresh" type="button">Синхронизировать</button><button id="accountLogout" type="button">Выйти из аккаунта</button></div></div>
+ <p id="accountMessage" role="status" aria-live="polite"></p><p class="privacy">Можно закрыть окно и играть гостем. <a href="privacy.html" target="_blank" rel="noopener">Как хранятся данные</a></p>
+</dialog>
+<script src="client/online.js"></script>
 <script>
 "use strict";
 // ================= Конфиг =================
@@ -474,7 +489,7 @@ function keyName(c){if(!c)return'—';const M={Mouse0:'ЛКМ',Mouse1:'СКМ',M
  ControlLeft:'L-Ctrl',ControlRight:'R-Ctrl',AltLeft:'L-Alt',AltRight:'R-Alt',Backspace:'Backspace',Tab:'Tab',CapsLock:'Caps',Enter:'Enter',Backquote:'`'};
  if(M[c])return M[c];if(c.startsWith('Key'))return c.slice(3);if(c.startsWith('Digit'))return c.slice(5);if(c.startsWith('Numpad'))return'Num '+c.slice(6);return c}
 function load(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
-function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function save(k,v){if(window.YosypAccount?.saveLocal?.(k,v))return;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 const settings=Object.assign({thirdPerson:true,touchMode:'auto',touchSens:1,sens:1,fov:90,editRelease:false,editOnRelease:false,invertY:false,showFps:false,vol:.7,nick:''},load('fb_settings')||{});
 settings.binds=Object.assign({},BIND_DEF,settings.binds||{});delete settings.binds.view;settings.thirdPerson=true;
 if(!['auto','on','off'].includes(settings.touchMode))settings.touchMode='auto';settings.touchSens=Math.max(.3,Math.min(2.5,Number(settings.touchSens)||1));
@@ -538,10 +553,10 @@ function collapseCheck(){const m=edgeMap(),seen=new Set(),q=[];for(const[k,p]of 
  while(q.length){const p=pieces.get(q.pop());for(const e of connKeys(p))for(const k2 of m.get(e)||[])if(!seen.has(k2)){seen.add(k2);q.push(k2)}}
  let n=0,pos=null;for(const[k,p]of[...pieces])if(!seen.has(k)){pieces.delete(k);if(editP===p)endEdit();burst(p.cen,MATS[p.mat].c,10,4);n++;pos=p.cen}
  if(n){dirty=true;SFX.play('collapse',pos)}return n}
-// ================= Онлайн 1 на 1 (WebRTC через PeerJS) =================
+// ================= Онлайн 1 на 1 (WebSocket через игровой сервер) =================
 // Все изменения мира идут через dispatch(action) и пересылаются сопернику.
 // Попадания считает стрелок, урон применяет тот, в кого попали.
-const NET_VER=30,ROOM_PREFIX='frbld-v30-',SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
+const NET_VER=40,SPAWNS=[[2,0,-30,0],[2,0,50,Math.PI]];
 const Net={online:false,host:false,zRewarded:new Set(),me:'local',conn:null,peer:null,score:{me:0,op:0},ping:0,sendT:0,pingT:0,
  send(a){this.msg({t:'act',a})},
  msg(o){try{if(this.conn&&this.conn.open)this.conn.send(o)}catch(e){}},
@@ -557,27 +572,17 @@ function handPos(){const h=charGeo([]),f=fwd();return[h[0]+f[0]*.95,h[1]+f[1]*.9
 let feedT=0;function feed(t){const f=document.getElementById('feed');f.textContent=t;f.style.opacity=1;clearTimeout(feedT);feedT=setTimeout(()=>f.style.opacity=0,2200)}
 function updScore(){document.getElementById('score').innerHTML='<span class="a">'+esc(settings.nick||'Ты')+' '+Net.score.me+'</span> : <span class="b">'+Net.score.op+' '+esc(rp.nick)+'</span>'}
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function loadPeer(){if(window.Peer)return Promise.resolve();
- const urls=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
- return urls.reduce((p,u)=>p.catch(()=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=u;s.onload=()=>window.Peer?res():rej();s.onerror=()=>{s.remove();rej()};document.head.appendChild(s)})),Promise.reject())
-  .catch(()=>{throw new Error('Не удалось загрузить сетевой модуль. Проверь интернет.')})}
-function roomCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let k=0;k<5;k++)c+=A[Math.floor(Math.random()*A.length)];return c}
 function peerErr(e){const m={'peer-unavailable':'Комната не найдена. Проверь код (и что друг не закрыл вкладку).','network':'Проблема с сетью.','server-error':'Сервер соединения недоступен, попробуй ещё раз.','browser-incompatible':'Браузер не поддерживает WebRTC.','unavailable-id':'Код занят, создаю новый…'};return m[e&&e.type]||('Ошибка: '+(e&&(e.type||e.message)||e))}
 let onlineGame='freebuild';
-async function hostRoom(){Net.reset();onlineGame=document.getElementById('onlineMode').value==='zombies'?'zombies':'freebuild';initWorld(onlineGame);Net.status('Подключаюсь к серверу…');
- try{await loadPeer()}catch(e){Net.status(e.message);return}
- const code=roomCode();const peer=new Peer(ROOM_PREFIX+code,{debug:0});Net.peer=peer;
- peer.on('open',()=>{document.getElementById('hostBox').classList.remove('hide');document.getElementById('roomCode').textContent=code;Net.status('Отправь код другу и жди — игра начнётся сама.')});
- peer.on('connection',c=>{if(Net.conn){c.on('open',()=>{c.send({t:'full'});setTimeout(()=>c.close(),300)});return}setupConn(c,true)});
- peer.on('error',e=>{if(e.type=='unavailable-id'){hostRoom();return}Net.status(peerErr(e))});
- peer.on('disconnected',()=>{if(!Net.online)try{peer.reconnect()}catch(e){}})}
-async function joinRoom(code){code=(code||'').trim().toUpperCase();if(code.length<4){Net.status('Введи код комнаты');return}
- Net.reset();Net.status('Подключаюсь…');
- try{await loadPeer()}catch(e){Net.status(e.message);return}
- const peer=new Peer({debug:0});Net.peer=peer;
- peer.on('open',()=>{Net.status('Ищу комнату '+code+'…');setupConn(peer.connect(ROOM_PREFIX+code,{reliable:true}),false);
-  Net.joinTimer=setTimeout(()=>{if(!Net.online)Net.status('Не получилось соединиться. Попробуйте ещё раз (иногда мешает сеть/VPN).')},15000)});
- peer.on('error',e=>Net.status(peerErr(e)))}
+async function hostRoom(){
+ Net.reset();onlineGame=document.getElementById('onlineMode').value==='zombies'?'zombies':'freebuild';initWorld(onlineGame);Net.status('Подключаюсь к серверу…');
+ Net.peer=window.YosypOnline.connect({host:true,game:onlineGame,nick:settings.nick||'Игрок',setup:setupConn,status:t=>Net.status(t),created:code=>{document.getElementById('hostBox').classList.remove('hide');document.getElementById('roomCode').textContent=code;Net.status('Отправь код другу. Комната готова.')}});
+}
+async function joinRoom(code){
+ code=(code||'').trim().toUpperCase();if(!/^[A-Z2-9]{6}$/.test(code)){Net.status('Введи шестизначный код комнаты');return;}
+ Net.reset();Net.status('Ищу комнату '+code+'…');
+ Net.peer=window.YosypOnline.connect({host:false,code,nick:settings.nick||'Игрок',setup:setupConn,status:t=>Net.status(t),created:()=>{}});
+}
 function setupConn(c,host){
  c.on('open',()=>{Net.conn=c;Net.host=host;Net.me=host?'h':'g';clearTimeout(Net.joinTimer);Net.status('Соединено! Запускаю…');
   Net.lastRx=performance.now();const hi=()=>{if(Net.conn!==c||Net.online){clearInterval(Net.helloT);return}Net.msg({t:'hello',nick:settings.nick||'Игрок',ver:NET_VER,game:Net.host?onlineGame:null})};clearInterval(Net.helloT);hi();Net.helloT=setInterval(hi,600)});
@@ -1257,6 +1262,7 @@ function resetCourse(silent=false){
  dirty=true;if(!silent)feed('Тренировка восстановлена');
 }
 function initWorld(which){
+ window.YosypAccount?.beginPlay();
  currentMap=which;resetZombies();if(editP)endEdit();pieces.clear();building.clear();animating.clear();frags.length=0;dirty=true;
  if(which==='training')resetCourse(true);
  if(which==='freebuild')for(const q of [{t:'r',i:0,j:2,l:0,d:2,mat:2},{t:'r',i:0,j:3,l:0,d:0,mat:2}]){
@@ -1314,7 +1320,7 @@ function isOwned(key,idx){return !!(settings.owned&&Array.isArray(settings.owned
 function unlockCos(key,idx){if(!isOwned(key,idx)){settings.owned[key].push(idx);save('fb_settings',settings);}}
 function fmtVbucks(n){return String(Math.max(0,Math.floor(n||0))).replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
 function syncVbucks(){const el=$('vbucksCount');if(el)el.textContent=fmtVbucks(settings.vbucks);}
-function addVbucks(amount,reason){settings.vbucks=Math.max(0,(settings.vbucks||0)+amount);save('fb_settings',settings);syncVbucks();
+function addVbucks(amount,reason){if(window.YosypAccount?.active){window.YosypAccount.reward(amount,reason);return;}settings.vbucks=Math.max(0,(settings.vbucks||0)+amount);save('fb_settings',settings);syncVbucks();
 if(reason)feed('+'+amount+' Эндер-баксов · '+reason);}
 syncVbucks();
 const SHOP_BUNDLES=[
@@ -1407,6 +1413,8 @@ function updateShopInspector(){
 }
 function buyOrEquipShopSelection(){
  if(!shopSel)return;
+ if(window.YosypAccount?.active){window.YosypAccount.purchase(shopSel);return;}
+ if(window.YosypAccount?.user?.emailVerified){feed('Сначала подключи сохранения в окне аккаунта.');return;}
  if(shopSel.kind==='bundle'){
   const b=SHOP_BUNDLES.find(x=>x.id===shopSel.id)||SHOP_BUNDLES[0],st=bundleStatus(b);
   if(!st.allOwned){
@@ -1448,7 +1456,7 @@ $('shopBuyBtn').onclick=buyOrEquipShopSelection;
 document.querySelectorAll('[data-shop-tab]').forEach(btn=>{btn.onclick=()=>{SFX.play('tile',null,.4);shopTab=btn.dataset.shopTab;renderShop();};});
 addEventListener('resize',()=>{if(!$('locker').classList.contains('hide'))lockerPreview()});
 
-function setMode(m){mode=m;$('lobbyChrome').classList.toggle('hide',m!=='menu');if(m==='menu')setLobbyTab('play');$('score').classList.toggle('hide',!Net.online||m=='menu'||currentMap==='zombies');if(m!=='play'&&emoteOpen)toggleEmotes();['menu','pause','dead'].forEach(s=>$(s).classList.toggle('hide',s!=m));$('settings').classList.add('hide');$('locker').classList.add('hide');$('shop').classList.add('hide');$('mapSelect').classList.add('hide');
+function setMode(m){mode=m;if(m==='play')window.YosypAccount?.resumePlay();$('lobbyChrome').classList.toggle('hide',m!=='menu');if(m==='menu')setLobbyTab('play');$('score').classList.toggle('hide',!Net.online||m=='menu'||currentMap==='zombies');if(m!=='play'&&emoteOpen)toggleEmotes();['menu','pause','dead'].forEach(s=>$(s).classList.toggle('hide',s!=m));$('settings').classList.add('hide');$('locker').classList.add('hide');$('shop').classList.add('hide');$('mapSelect').classList.add('hide');
  $('trainingHelp').classList.toggle('hide',currentMap!=='training'||Net.online||m==='menu');$('bResetCourse').classList.toggle('hide',currentMap!=='training'||Net.online);$('resetKey').textContent=keyName(settings.binds.resetCourse);
  $('hud').classList.toggle('hide',m=='menu');dynEl.classList.toggle('hide',m=='menu');
  if(m!='play'&&document.pointerLockElement)document.exitPointerLock();for(const k in held)held[k]=false;firePressed=false;pendX=pendY=0;touchController?.reset();touchController?.sync();}
@@ -1919,5 +1927,13 @@ const CFN=(()=>{
  return C})();
 touchController=createTouchController();touchController.configure();syncSettings();
 window.__fb={Z,zombieTick,startWave,spawnZombie,zombieBoxes,applyZombieHit,applyZombieState,wallAlpha,toggleEmotes,chooseEmote,playEmote,EMOTIONS,PHRASES,initWorld,resetCourse,trainingSpecs,get currentMap(){return currentMap},SKINS,PICKS,SHOP_ITEMS,SHOP_BUNDLES,vmGeo,vmFor,renderLocker,renderShop,openShop,shotRay,building,frags,CFN,bodyHit,bodyPen,supportAt,ceilingAt,coneParts,tickBuildings,MATS,materialBands,connKeys,SFX,canPlace,collapseCheck,coneHt,Net,rp,netHandle,startMatch,tracers,get myState(){return myState()},get camInfo(){return camInfo},aimRay,computeCam,charGeo,get pend(){return[pendX,pendY]},rampFromPath,finalize,me,pieces,dispatch,update,codeDown,codeUp,held,get settings(){return settings},setSlot,setMode,raycast,startEdit,confirmEdit,get editP(){return editP},set editMask(v){editMask=v},dummies,fire,W,ammo,get mode(){return mode},target};
+
+window.GameAccountBridge={
+ pause(){if(mode==='play')setMode('pause');},playing(){return mode==='play';},notify:feed,
+ snapshot(){return JSON.parse(JSON.stringify(settings));},
+ equipment(){return{nick:settings.nick,skin:settings.skin,pick:settings.pick,emote:settings.emote,phrase:settings.phrase};},
+ deviceSettings(v){const q={...v};for(const k of ['vbucks','owned','skin','pick','emote','phrase','nick'])delete q[k];return q;},
+ apply(p){for(const k of ['vbucks','owned','skin','pick','emote','phrase','nick'])if(p[k]!==undefined)settings[k]=JSON.parse(JSON.stringify(p[k]));document.getElementById('nick').value=settings.nick||'';syncVbucks();buildVM();if(!$('locker').classList.contains('hide'))renderLocker();if(!$('shop').classList.contains('hide'))renderShop();}
+};
 requestAnimationFrame(frame);
-</script></body></html>
+</script><script type="module" src="client/account.js"></script></body></html>
