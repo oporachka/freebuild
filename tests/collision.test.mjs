@@ -163,3 +163,57 @@ test('the missing half of an edited ramp remains open', () => {
   for (let frame = 0; frame < 45; frame++) { f.s.held.jump = frame === 0; f.update(1 / 60); highest = Math.max(highest, f.s.me.y); }
   assert.ok(highest > 1); near(f.s.me.y, 0);
 });
+
+for (const d of [0, 1, 2, 3]) {
+  test('entering a ramp from ground or a floor reaches its upper slope, direction ' + d, () => {
+    for (const floor of [false, true]) for (const start of [-.83, -.02, 0])
+      for (const dt of [1 / 60, .05]) for (const sprint of [false, true]) {
+        const f = fixture(); f.add({ t: 'r', i: 0, j: 0, l: 0, d });
+        if (floor) {
+          f.add({ t: 'f', i: 0, j: 0, l: 0 });
+          const [i, j] = [[0, -1], [-1, 0], [0, 1], [1, 0]][d];
+          f.add({ t: 'f', i, j, l: 0 });
+        }
+        Object.assign(f.s.me, {
+          x: d === 1 ? start : d === 3 ? 4 - start : 2,
+          z: d === 0 ? start : d === 2 ? 4 - start : 2,
+          y: floor ? .1 : 0, yaw: d * Math.PI / 2
+        });
+        f.s.held.forward = true; f.s.held.sprint = sprint;
+        let reached = false;
+        for (let frame = 0; frame < Math.ceil(2 / dt); frame++) {
+          f.update(dt);
+          const { x, y, z } = f.s.me;
+          const along = d === 0 ? z : d === 1 ? x : d === 2 ? 4 - z : 4 - x;
+          if (along > 3) { near(y, along + .1); assert.ok(f.s.me.onGround); reached = true; break; }
+        }
+        assert.ok(reached, 'Blocked at ramp entrance: ' + JSON.stringify({ d, floor, start, dt, sprint, x: f.s.me.x, y: f.s.me.y, z: f.s.me.z }));
+      }
+  });
+}
+
+test('a valid ground step cannot push the player through another ramp overhead', () => {
+  const f = fixture();
+  f.add({ t: 'r', i: 0, j: 0, l: 0, d: 0 });
+  f.add({ t: 'r', i: 0, j: 0, l: 1, d: 2 });
+  Object.assign(f.s.me, { x: 2, z: -.02 }); f.s.held.forward = true;
+  for (let frame = 0; frame < 90; frame++) {
+    f.update(1 / 60);
+    assert.ok(f.s.me.y + f.HEAD <= 8 - (f.s.me.z + f.R) - .15 + 1e-6, 'Ground step crossed the overhead ramp');
+  }
+  assert.ok(f.s.me.z > 2 && f.s.me.z < 3, 'Player must climb until reaching the ceiling');
+  assert.ok(f.s.me.onGround);
+});
+
+test('touch movement climbs two connected half ramps and steps onto the upper floor', () => {
+  const f = fixture();
+  f.add({ t: 'r', i: -1, j: -1, l: 0, d: 0, hs: 0 });
+  f.add({ t: 'f', i: -1, j: 0, l: 1 });
+  f.add({ t: 'r', i: -1, j: 0, l: 1, d: 0, hs: 0 });
+  f.add({ t: 'f', i: -1, j: 1, l: 2 });
+  Object.assign(f.s.me, { x: -3, z: -4.02 });
+  f.s.touchController = { enabled: true, moveX: 0, moveY: -1, sprinting: true, afterUpdate() {} };
+  for (let frame = 0; frame < 90 && f.s.me.z < 4.5; frame++) f.update(1 / 60);
+  assert.ok(f.s.me.z >= 4.5, 'Touch movement got stuck at a ramp/floor connection');
+  near(f.s.me.y, 8.1); assert.ok(f.s.me.onGround);
+});
